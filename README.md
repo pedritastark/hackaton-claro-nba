@@ -2,7 +2,9 @@
 
 Solución al reto **Claro Colombia × Universidad del Rosario: "Orquestador NBA configurable"**.
 
-Para cada uno de 100.000 clientes decide **qué producto ofrecer** (Hogar, Terminales u OTT) y **por qué canal** (asesor, WhatsApp, correo o SMS), de forma que el valor esperado sea máximo y **no se viole ninguna de las 16 restricciones** (R01–R16). Todas las reglas y números viven en archivos de configuración que el negocio cambia desde una consola web, sin tocar código.
+Para cada uno de 100.000 clientes decide **qué productos ofrecer** (Hogar, Terminales u OTT) y **por qué canal** (asesor, WhatsApp, correo o SMS), respetando las 16 restricciones (R01–R16). Con la configuración inicial, el optimizador maximiza el valor esperado; al cambiar los pesos puede maximizar otra utilidad de negocio. Las reglas, umbrales y cupos se editan desde la configuración y la consola. La [formulación y sus supuestos](docs/FORMULACION_MATEMATICA.md) precisan el alcance de esa garantía.
+
+Resultados registrados en la entrega original; no son una nueva ejecución automática al leer este README:
 
 | Resultado (datos oficiales) | Valor |
 |---|---|
@@ -15,7 +17,7 @@ Para cada uno de 100.000 clientes decide **qué producto ofrecer** (Hogar, Termi
 
 ## Inicio rápido
 
-Requiere Python 3.9.
+Desarrollado originalmente con Python 3.9 y Pydantic v2. Las dependencias no están bloqueadas a versiones exactas; consultar [instalación, reproducción y entorno verificado](docs/REPRODUCIBILIDAD.md).
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
@@ -63,6 +65,8 @@ clientes.csv + config/*.yaml
 
 Detalle completo en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md).
 
+El modelo usa una variable por par cliente–canal, después de construir el mejor paquete local. La matriz bipartita permite un óptimo entero de la relajación lineal. La [demostración y las condiciones numéricas](docs/FORMULACION_MATEMATICA.md) explican por qué esto conserva el óptimo y cuándo deja de aplicarse. El [ejemplo con cuatro clientes](docs/EJEMPLO_ASIGNACION.md) muestra una mejora frente al codicioso, verificada también por enumeración.
+
 ## Configuración
 
 Tres archivos YAML en `config/` (la versión viva que edita la consola) y `config_inicial/` (la del reto, que usan las pruebas):
@@ -89,6 +93,8 @@ Cada decisión genera un registro estructurado con productos y canales considera
 4. **Pruebas de mutación**: se rompe el código a propósito para confirmar que las pruebas fallan.
 5. **88 pruebas**, incluida una por cada tipo de cambio de configuración.
 
+La cifra de 88 pruebas y los resultados de la tabla proceden del informe histórico. La [verificación de esta ampliación documental](docs/VERIFICACION_DOCUMENTACION.md) identifica qué se volvió a ejecutar. La [matriz R01–R16](docs/RESTRICCIONES.md) distingue numeración del PDF, reglas YAML, validadores y cobertura de pruebas.
+
 ## Estructura del repositorio
 
 ```
@@ -109,10 +115,25 @@ extraido/        kit original del reto (PDFs, casos de ejemplo, config en CSV)
 | Documento | Para qué |
 |---|---|
 | [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) | Pipeline, modelo de datos, algoritmo de asignación, decisiones de diseño |
+| [`docs/FORMULACION_MATEMATICA.md`](docs/FORMULACION_MATEMATICA.md) | Variables, ecuaciones, utilidad exacta, demostración del óptimo y límites |
+| [`docs/RESTRICCIONES.md`](docs/RESTRICCIONES.md) | Correspondencia R01–R16 con YAML, implementación, validadores y pruebas |
+| [`docs/EJEMPLO_ASIGNACION.md`](docs/EJEMPLO_ASIGNACION.md) | Caso pequeño resuelto y ejecutable; comparación con el codicioso |
 | [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md) | Cada campo de los YAML, operadores de reglas, recetas de cambios |
 | [`docs/GUIA_CONSOLA.md`](docs/GUIA_CONSOLA.md) | Recorrido de la consola para el usuario de negocio |
+| [`docs/REPRODUCIBILIDAD.md`](docs/REPRODUCIBILIDAD.md) | Instalación, comandos, versiones, validación y reproducción de entregables |
+| [`docs/VERIFICACION_DOCUMENTACION.md`](docs/VERIFICACION_DOCUMENTACION.md) | Evidencia y alcance de las comprobaciones de esta documentación |
 | [`docs/diccionario_datos.md`](docs/diccionario_datos.md) | Columnas de la base de clientes |
 | [`entrega/INFORME.md`](entrega/INFORME.md) | Informe de resultados |
 | [`PLAN.md`](PLAN.md) | Plan y decisiones tomadas |
 | [`docs/PENDIENTES.md`](docs/PENDIENTES.md) | Límites conocidos y siguientes pasos |
 | [`CLAUDE.md`](CLAUDE.md) | Guía para trabajar el proyecto con Claude Code |
+
+## Documentos originales del reto
+
+Copias de los tres PDFs proporcionados, conservadas en [`docs/planteamiento_del_reto/`](docs/planteamiento_del_reto/):
+
+- [Diccionario de datos y formatos](docs/planteamiento_del_reto/diccionario_datos_y_formatos.pdf).
+- [El reto estudiantes](docs/planteamiento_del_reto/reto_estudiantes.pdf).
+- [Presentación del reto Orquestador NBA](docs/planteamiento_del_reto/reto_hackaton_orquestador_nba.pdf).
+
+Estos documentos definen el problema. La formulación matemática y las decisiones de implementación descritas en las guías son la solución del equipo.

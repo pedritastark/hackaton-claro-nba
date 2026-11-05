@@ -4,6 +4,8 @@ Hackatón Claro Colombia · Universidad del Rosario · Reto «Orquestador NBA co
 
 Todas las cifras de este informe salen de la base oficial del reto (`clientes.csv`, 100.000 clientes, 45 variables; los datos son sintéticos, según el propio diccionario) y de la configuración inicial del PDF.
 
+Este informe conserva los resultados de la entrega original. La ampliación documental no regenera sus archivos ni atribuye esos tiempos al entorno actual. La [formulación completa](../docs/FORMULACION_MATEMATICA.md), la [matriz de restricciones](../docs/RESTRICCIONES.md), el [ejemplo reproducible](../docs/EJEMPLO_ASIGNACION.md) y la [guía de reproducción](../docs/REPRODUCIBILIDAD.md) desarrollan y precisan la explicación de la solución.
+
 ## 1. Resultado
 
 | Indicador | Línea base oficial (PDF) | Nuestra réplica de la línea base | **Nuestro motor (óptimo)** |
@@ -24,7 +26,7 @@ La parrilla entregada pasa dos verificaciones independientes entre sí, con 0 vi
 Decidir, para cada cliente, qué productos (Hogar, Terminales, OTT) ofrecer y por qué canal (asesor, WhatsApp, correo, SMS), maximizando el valor esperado sin violar ninguna de las 16 restricciones, y con reglas que negocio cambie sin tocar código.
 
 Principios de diseño:
-1. **Todo número o regla de negocio vive en la configuración** (`config/*.yaml`), nunca en el código.
+1. **Reglas, umbrales y cupos de negocio viven en la configuración** (`config/*.yaml`). Las constantes de implementación (tolerancias, bonos y `EPS_DESEMPATE`) se identifican en la formulación.
 2. **Primero se cumple, después se optimiza.** El validador es un módulo independiente del motor.
 3. **Cada decisión se explica**, con la misma fuente para la parrilla, el archivo de explicaciones y la consola.
 
@@ -64,10 +66,12 @@ La línea base decide cliente por cliente y agota los cupos escasos con los prim
 
 1. Para cada cliente y canal se arma el mejor paquete de hasta *k* productos (*k* = productos por contacto del canal) y se calcula su valor `Σ score_producto × score_canal × valor_negocio`.
 2. Elegir un canal por cliente respetando los cupos es un **problema de transporte**: se resuelve como programación lineal (HiGHS, `scipy`), con una variable por par cliente–canal con opciones.
-3. En la corrida final la solución del LP salió **entera** (se verifica en cada corrida; si no lo fuera, hay un redondeo de respaldo), por lo que es el **óptimo global** del valor esperado bajo nuestra interpretación de las restricciones.
+3. En la corrida final se reportó una solución **entera**. La matriz cliente–canal es de incidencia bipartita y, con cupos enteros, admite un óptimo entero de la relajación. La [demostración](../docs/FORMULACION_MATEMATICA.md) explica los supuestos de equivalencia entre los paquetes y el modelo original. Si se recurre al redondeo fraccionario de respaldo, no se conserva una garantía de óptimo.
 4. Las dos campañas de un contacto se ordenan por puntaje, como pide el diccionario (`campana_1` es la de mayor puntaje), con el desempate configurado.
 
 La pregunta del PDF «¿dos productos por WhatsApp o uno por asesor?» se resuelve sola: cada canal compite con el valor de su mejor paquete.
+
+Precisión sobre los coeficientes: con los parámetros iniciales, `EPS_DESEMPATE` hace que la utilidad LP sea 1,001 veces el valor esperado, por lo que conserva el mismo óptimo. Las cifras de valor de este informe son las de la métrica original; los precios sombra guardados son de la utilidad LP y se dividen por 1,001 para expresarlos en valor real.
 
 **Qué muestran los cupos:**
 
@@ -98,7 +102,7 @@ Con la jerarquía inicial (Hogar > Terminales > OTT) el valor de negocio ya orde
 
 ### Peso del modelo frente al valor de negocio
 
-Otro cambio que negocio debe poder pedir es «dar más o menos peso al modelo frente al valor de negocio». En el algoritmo óptimo la utilidad que se maximiza es `score_producto^peso_modelo × score_canal × valor^peso_valor`. Con los dos pesos en 1 (valor por defecto) es exactamente la métrica del reto. Subir `peso_modelo` inclina la decisión hacia el producto que el modelo cree más probable; subir `peso_valor`, hacia el de mayor valor. Los pesos 0,6 / 0,2 / 0,2 del diccionario (que deben sumar 1) rigen la línea base codiciosa.
+Otro cambio que negocio debe poder pedir es «dar más o menos peso al modelo frente al valor de negocio». La utilidad exacta por oferta es `score_producto^peso_modelo × score_canal × ((1-alpha)·valor_negocio + alpha·nivel_jerarquia + 0,001·valor_negocio)^peso_valor`. Con `alpha=0` y exponentes en 1 es 1,001 veces la métrica del reto y conserva el mismo óptimo. Subir `peso_modelo` favorece scores de producto mayores; subir `peso_valor`, el valor efectivo mayor. Los pesos 0,6 / 0,2 / 0,2 del diccionario (que deben sumar 1) rigen la selección de la línea base codiciosa. La jerarquía ponderada no implica prioridad lexicográfica estricta.
 
 | peso modelo | peso valor | Valor esperado | Prob. de compra media de lo ofrecido | Valor medio por producto |
 |---|---|---|---|---|
@@ -144,7 +148,8 @@ La consola (`streamlit run app/consola.py`) tiene cuatro secciones de trabajo: *
 ## 10. Limitaciones y supuestos
 
 - **Un canal por cliente.** `politica_contacto.canales_por_cliente` distinto de 1 se rechaza con un mensaje claro: el motor asigna un solo canal por cliente (restricción R13). Soportar varios canales cambiaría la formulación del optimizador.
-- **Optimalidad:** es del valor esperado con las restricciones tal como las interpretamos; la integralidad del LP se verificó en la corrida final, no se demostró en general.
+- **Optimalidad:** para los parámetros iniciales se justifica por la reducción a paquetes y la integralidad del LP bipartito, bajo los supuestos detallados en la formulación. La ejecución debe terminar correctamente y producir una solución entera. Con otros pesos o bonos se optimiza otra utilidad; el redondeo fraccionario no tiene garantía de óptimo.
+- **Formato:** la parrilla tiene dos columnas de campaña. Topes superiores a dos productos requieren adaptar la salida; la demostración del modelo interno no corrige por sí sola esa diferencia de representación.
 - **Interpretación de R15:** un cliente puede contactarse si `contactos_semana_actual + 1 ≤ tope`.
 - **Diferencia de un producto** frente a la línea base oficial (70.444 frente a 70.443), probablemente por el orden de empates entre clientes.
 - **Consola:** el simulador de pruebas no puede teclear dentro de las tablas editables, así que esos cambios se prueban reemplazando el contenido de la tabla en el estado de la sesión. Conviene un recorrido manual en el navegador.

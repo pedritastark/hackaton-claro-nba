@@ -1,6 +1,6 @@
 # Guía de configuración
 
-La configuración son tres archivos YAML. La consola los edita por ti; también puedes editarlos a mano (se validan al cargar). `config_inicial/` es la del reto y no se toca; `config/` es la viva. Cambia de carpeta con la variable `NBA_CONFIG_DIR`.
+La configuración son tres archivos YAML. La consola los edita por ti; también puedes editarlos a mano (se validan al cargar). `config_inicial/` es la del reto y se conserva como referencia; `config/` es la viva. En la consola cambia de carpeta con `NBA_CONFIG_DIR`; en la CLI, con `--config`. `entrega/config/` es la instantánea de la entrega guardada.
 
 ## `campanas.yaml`
 | Campo | Significado |
@@ -18,8 +18,10 @@ La configuración son tres archivos YAML. La consola los edita por ti; también 
 Cada regla dice: *"si `atributo` `operador` `valor`, entonces `excluir`"*.
 
 ```yaml
+reglas:
 - id: R02
   nombre: Terminales solo con calificacion E, A o B
+  tipo: elegibilidad          # elegibilidad | canal
   alcance_nivel: campana        # global | campana | producto | objetivo | canal
   alcance_valores: [C-TER]      # a quién aplica (vacío si es global)
   atributo: calificacion_riesgo # cualquier columna de la base
@@ -51,6 +53,23 @@ Notas:
 | `asignacion.criterio_canal` | `score_canal` u `orden_preferencia` |
 | `asignacion.umbral_score_canal` | R11: score mínimo de canal (0,25) |
 
+También existen `fecha_corrida` (fecha para evaluar vigencias), `asignacion.orden_preferencia` (lista de canales cuando se usa ese criterio) y `politica_contacto.columna_contactos_semana` (columna del historial semanal).
+
+### Qué parámetros afectan a cada algoritmo
+
+| Parámetro | `codicioso` | `optimo` |
+|---|---|---|
+| Reglas, umbrales, vigencia, canales permitidos, cupos y topes | Restringen opciones | Restringen opciones |
+| `priorizacion.pesos` y `modo` | Determinan el puntaje para elegir productos y ordenar clientes | Ordenan las campañas ya elegidas en la salida; no cambian el objetivo LP |
+| `alpha`, `peso_modelo`, `peso_valor` | No determinan la selección del codicioso | Determinan la utilidad de selección de productos y contactos |
+| `desempate` | Desempata puntajes de campañas | Desempata utilidades de campañas; también ordena la salida |
+| `criterio_canal: score_canal` | Escoge el canal de mayor score con cupo al recorrer cada cliente | Maximiza utilidad de paquetes globalmente, sujeto a cupos |
+| `criterio_canal: orden_preferencia` | Recorre canales en el orden configurado | Añade un bono al objetivo por rango del canal |
+
+Los exponentes se aceptan entre 0 y 5 y `alpha` entre 0 y 1. Con `alpha=0` y exponentes 1, el objetivo LP es 1,001 veces el valor real; con otros valores, cambia el objetivo. `alpha=1` no obliga a respetar siempre la primera campaña de la jerarquía. La [fórmula exacta](FORMULACION_MATEMATICA.md) explica el término adicional y sus efectos.
+
+Los criterios de desempate admitidos son `score_producto`, `valor_negocio` y `jerarquia`. El modo `jerarquia_estricta` usa un bono fijo para calcular el puntaje; no impone una jerarquía global estricta del optimizador.
+
 ## Recetas
 - **Subir el cupo de WhatsApp:** `canales[whatsapp].cupo`.
 - **Lanzar una campaña nueva:** añadir un bloque en `campanas.yaml` con su `columna_score` (debe existir en la base).
@@ -60,3 +79,7 @@ Notas:
 
 ## Qué pasa si la configuración es inválida
 El motor y la consola la rechazan con el campo que falla (por ejemplo pesos que no suman 1). La consola ofrece restaurar `config_inicial/`.
+
+La validación de estructura no garantiza que cualquier CSV sea correcto: deben existir las columnas referidas, los scores deben ser numéricos y válidos, y los datos de servicios e historial deben ser coherentes. Usar un cupo entero no negativo y un tope de uno o dos productos para respetar las columnas de salida actuales. No configurar varios canales por cliente: el motor solo soporta uno.
+
+La [matriz R01–R16](RESTRICCIONES.md) explica qué condiciones son filtros, cuáles son restricciones del optimizador y cómo se comprueban. La [guía de consola](GUIA_CONSOLA.md) muestra cómo aplicar o deshacer cambios con vista previa.
