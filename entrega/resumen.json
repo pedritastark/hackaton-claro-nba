@@ -1,0 +1,107 @@
+{
+  "clientes": 100000,
+  "embudo_campanas": {
+    "C-VCH": {
+      "elegibles": 14511,
+      "excluidos_por": {
+        "UMBRAL_PRODUCTO": 74866,
+        "R06": 37490,
+        "R04": 35874,
+        "R01": 7284,
+        "R07": 529
+      }
+    },
+    "C-TER": {
+      "elegibles": 18509,
+      "excluidos_por": {
+        "UMBRAL_PRODUCTO": 56796,
+        "R03": 41274,
+        "R06": 37433,
+        "R02": 30130,
+        "R01": 7284,
+        "R07": 529
+      }
+    },
+    "C-OTT": {
+      "elegibles": 49811,
+      "excluidos_por": {
+        "R06": 37003,
+        "UMBRAL_PRODUCTO": 13860,
+        "R01": 7284,
+        "R05": 3119,
+        "R07": 529
+      }
+    }
+  },
+  "embudo_canales": {
+    "whatsapp": {
+      "habilitados": 63123,
+      "excluidos_por": {
+        "R08": 27955,
+        "UMBRAL_CANAL": 15074
+      }
+    },
+    "correo": {
+      "habilitados": 40020,
+      "excluidos_por": {
+        "R09": 37452,
+        "UMBRAL_CANAL": 36756
+      }
+    },
+    "sms": {
+      "habilitados": 66895,
+      "excluidos_por": {
+        "UMBRAL_CANAL": 28163,
+        "R10": 6926
+      }
+    },
+    "asesor": {
+      "habilitados": 76761,
+      "excluidos_por": {
+        "UMBRAL_CANAL": 22693,
+        "R11": 1265
+      }
+    }
+  },
+  "tope_semanal_excluye": 1388,
+  "cupos": {
+    "whatsapp": {
+      "cupo": 15000,
+      "usado": 15000,
+      "uso_pct": 100.0,
+      "precio_cupo": 0.0652
+    },
+    "correo": {
+      "cupo": 30000,
+      "usado": 18806,
+      "uso_pct": 62.7,
+      "precio_cupo": 0.0
+    },
+    "sms": {
+      "cupo": 40000,
+      "usado": 24116,
+      "uso_pct": 60.3,
+      "precio_cupo": 0.0
+    },
+    "asesor": {
+      "cupo": 2500,
+      "usado": 2500,
+      "uso_pct": 100.0,
+      "precio_cupo": 0.0925
+    }
+  },
+  "sin_accion_por": {
+    "tope_semanal": 1388,
+    "sin_campana_elegible": 35436,
+    "sin_canal_habilitado": 2369,
+    "sin_cupo": 385
+  },
+  "desplazados_a_otro_canal": {
+    "clientes": 19204,
+    "valor_cedido": 597.11
+  },
+  "sin_accion_por_cupo": {
+    "clientes": 385,
+    "valor_no_capturado": 23.0
+  }
+}

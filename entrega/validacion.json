@@ -1,0 +1,24 @@
+{
+  "violaciones_total": 0,
+  "violaciones": {},
+  "ejemplos": {},
+  "valor_esperado": 10940.0,
+  "clientes_con_accion": 60422,
+  "productos_asignados": 76841,
+  "uso_canales": {
+    "sms": 24116,
+    "whatsapp": 15000,
+    "correo": 18806,
+    "asesor": 2500
+  },
+  "jerarquia_pct": 99.84,
+  "segundos_motor_con_explicaciones": 17.5,
+  "algoritmo": "optimo",
+  "alpha": 0.0,
+  "precio_cupo": {
+    "whatsapp": 0.06517243532800002,
+    "correo": 0.0,
+    "sms": 0.0,
+    "asesor": 0.09254857612000003
+  }
+}

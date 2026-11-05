@@ -1,0 +1,48 @@
+fecha_corrida: '2026-11-04'
+canales:
+- id: whatsapp
+  columna_score: score_canal_whatsapp
+  cupo: 15000
+  max_productos: 2
+- id: correo
+  columna_score: score_canal_correo
+  cupo: 30000
+  max_productos: 2
+- id: sms
+  columna_score: score_canal_sms
+  cupo: 40000
+  max_productos: 2
+- id: asesor
+  columna_score: score_canal_asesor
+  cupo: 2500
+  max_productos: 1
+priorizacion:
+  modo: ponderado
+  jerarquia:
+  - C-VCH
+  - C-TER
+  - C-OTT
+  pesos:
+    score_producto: 0.6
+    valor_negocio: 0.2
+    jerarquia: 0.2
+  umbral_score_producto: 0.35
+  desempate:
+  - score_producto
+  - valor_negocio
+  alpha: 0.0
+  peso_modelo: 1.0
+  peso_valor: 1.0
+politica_contacto:
+  max_contactos_semana: 3
+  columna_contactos_semana: contactos_semana_actual
+  canales_por_cliente: 1
+asignacion:
+  algoritmo: optimo
+  criterio_canal: score_canal
+  orden_preferencia:
+  - whatsapp
+  - correo
+  - sms
+  - asesor
+  umbral_score_canal: 0.25

@@ -1,0 +1,172 @@
+{
+  "linea_base_codiciosa": {
+    "valor_esperado": 10241.593345032003,
+    "clientes_con_accion": 55393,
+    "productos_asignados": 70444,
+    "jerarquia_pct": 99.68,
+    "uso_canales": {
+      "whatsapp": 15000,
+      "correo": 16553,
+      "sms": 21340,
+      "asesor": 2500
+    },
+    "cupo_canales": {
+      "whatsapp": 15000,
+      "correo": 30000,
+      "sms": 40000,
+      "asesor": 2500
+    },
+    "productos_por_campana": {
+      "C-VCH": 13478,
+      "C-TER": 16574,
+      "C-OTT": 40392
+    },
+    "segundos": 0.5
+  },
+  "motor_optimo": {
+    "valor_esperado": 10940.0024511,
+    "clientes_con_accion": 60422,
+    "productos_asignados": 76841,
+    "jerarquia_pct": 99.84,
+    "uso_canales": {
+      "whatsapp": 15000,
+      "correo": 18806,
+      "sms": 24116,
+      "asesor": 2500
+    },
+    "cupo_canales": {
+      "whatsapp": 15000,
+      "correo": 30000,
+      "sms": 40000,
+      "asesor": 2500
+    },
+    "productos_por_campana": {
+      "C-VCH": 14198,
+      "C-TER": 18045,
+      "C-OTT": 44598
+    },
+    "segundos": 12.1
+  },
+  "sensibilidad_alpha": {
+    "0.0": {
+      "valor_esperado": 10940.0024511,
+      "clientes_con_accion": 60422,
+      "productos_asignados": 76841,
+      "jerarquia_pct": 99.84,
+      "uso_canales": {
+        "whatsapp": 15000,
+        "correo": 18806,
+        "sms": 24116,
+        "asesor": 2500
+      },
+      "cupo_canales": {
+        "whatsapp": 15000,
+        "correo": 30000,
+        "sms": 40000,
+        "asesor": 2500
+      },
+      "productos_por_campana": {
+        "C-VCH": 14198,
+        "C-TER": 18045,
+        "C-OTT": 44598
+      },
+      "segundos": 12.2
+    },
+    "0.25": {
+      "valor_esperado": 10935.627405594,
+      "clientes_con_accion": 60263,
+      "productos_asignados": 76651,
+      "jerarquia_pct": 99.88,
+      "uso_canales": {
+        "whatsapp": 15000,
+        "correo": 18735,
+        "sms": 24028,
+        "asesor": 2500
+      },
+      "cupo_canales": {
+        "whatsapp": 15000,
+        "correo": 30000,
+        "sms": 40000,
+        "asesor": 2500
+      },
+      "productos_por_campana": {
+        "C-VCH": 14226,
+        "C-TER": 18036,
+        "C-OTT": 44389
+      },
+      "segundos": 12.0
+    },
+    "0.5": {
+      "valor_esperado": 10915.558375862,
+      "clientes_con_accion": 59947,
+      "productos_asignados": 76281,
+      "jerarquia_pct": 99.92,
+      "uso_canales": {
+        "whatsapp": 15000,
+        "correo": 18549,
+        "sms": 23898,
+        "asesor": 2500
+      },
+      "cupo_canales": {
+        "whatsapp": 15000,
+        "correo": 30000,
+        "sms": 40000,
+        "asesor": 2500
+      },
+      "productos_por_campana": {
+        "C-VCH": 14250,
+        "C-TER": 17996,
+        "C-OTT": 44035
+      },
+      "segundos": 11.8
+    },
+    "0.75": {
+      "valor_esperado": 10855.342876706,
+      "clientes_con_accion": 59320,
+      "productos_asignados": 75563,
+      "jerarquia_pct": 99.95,
+      "uso_canales": {
+        "whatsapp": 15000,
+        "correo": 18257,
+        "sms": 23563,
+        "asesor": 2500
+      },
+      "cupo_canales": {
+        "whatsapp": 15000,
+        "correo": 30000,
+        "sms": 40000,
+        "asesor": 2500
+      },
+      "productos_por_campana": {
+        "C-VCH": 14270,
+        "C-TER": 17942,
+        "C-OTT": 43351
+      },
+      "segundos": 11.0
+    },
+    "1.0": {
+      "valor_esperado": 10615.361011320001,
+      "clientes_con_accion": 57289,
+      "productos_asignados": 73419,
+      "jerarquia_pct": 99.98,
+      "uso_canales": {
+        "whatsapp": 15000,
+        "correo": 17325,
+        "sms": 22464,
+        "asesor": 2500
+      },
+      "cupo_canales": {
+        "whatsapp": 15000,
+        "correo": 30000,
+        "sms": 40000,
+        "asesor": 2500
+      },
+      "productos_por_campana": {
+        "C-VCH": 14285,
+        "C-TER": 17877,
+        "C-OTT": 41257
+      },
+      "segundos": 3.6
+    }
+  }
+}
