@@ -1,8 +1,8 @@
 # PLAN — Orquestador NBA configurable
 
-Estado: pasos 1–4 HECHOS + explicabilidad + consola (tablero, cambios con vista previa, cliente, versiones; 88 tests en verde). Pendiente: pruebas por tipo de cambio (paso 7), pulido y entrega. Plazo total: 2 días.
+Registro del plan original y las decisiones implementadas. El informe y los artefactos de `entrega/` ya existen; sus resultados históricos incluyen 88 pruebas reportadas. La evidencia de las comprobaciones de la ampliación documental está en `docs/VERIFICACION_DOCUMENTACION.md`; no se presenta esa cifra histórica como una ejecución nueva.
 
-## Calendario (2 días)
+## Calendario original (referencia histórica)
 - **Día 1 (hecho en gran parte):** config, reglas, validador, línea base, óptimo exacto.
 - **Día 2 mañana:** perilla α + curva valor/jerarquía (paso 5); consola mínima funcional (paso 6: editar config, vista previa con diff, pantalla de cliente).
 - **Día 2 tarde:** pruebas por tipo de cambio (paso 7), corrida final, parrilla de entrega, demo. Recorte si falta tiempo: precios sombra y escenarios en la consola.
@@ -13,10 +13,9 @@ Estado: pasos 1–4 HECHOS + explicabilidad + consola (tablero, cambios con vist
 3. Los 7 tipos de cambio de negocio se resuelven por configuración, sin tocar código.
 4. Jerarquía visible y ajustable; cada decisión con razón.
 
-## Supuestos (confirmar)
-- Python 3 + pandas/numpy/scipy + Pydantic + PyYAML + Streamlit. Sin DB ni servicios.
-- Datos: `data/clientes.csv` sintético; diccionario inferido (`docs/diccionario_datos.md`).
-- Plazo y prioridad de evaluación: sin definir.
+## Entorno y datos de la implementación
+- Python 3 (desarrollo original en 3.9) + pandas/numpy/scipy + Pydantic v2 + PyYAML + Streamlit. Sin DB ni servicios. Versiones y reproducción: `docs/REPRODUCIBILIDAD.md`.
+- Datos usados por defecto: `data/oficial/clientes.csv`; son los datos sintéticos oficiales del reto. `data/clientes.csv` corresponde a una generación anterior y no es la referencia de entrega. Diccionario oficial resumido en `docs/diccionario_datos.md`.
 
 ## Arquitectura
 `config/ + datos → Elegibilidad → Candidatos → Asignación → Parrilla(+razón)`; `Validador` aparte, sin importar el motor.
@@ -28,13 +27,13 @@ Estructura: `nba/{config,reglas,elegibilidad,candidatos,asignacion,parrilla,vali
 |---|---|---|
 | Config | YAML validado con Pydantic, versionado | constantes en código / CSV sueltos |
 | Reglas | tabla atributo/operador/valor/alcance, intérprete vectorizado, frase de negocio autogenerada | `if` por campaña |
-| Prioridad | `U = (1−α)·valor_esperado + α·bono_jerarquía`; modo ponderado de línea base disponible | solo pesos fijos |
-| Asignación | LP de transporte exacto (HiGHS); respaldo lagrangiano con precio por canal | codicioso por cliente |
+| Prioridad | Utilidad por oferta con mezcla de valor y nivel de jerarquía, exponentes y término epsilon; fórmula exacta en `docs/FORMULACION_MATEMATICA.md` | solo pesos fijos |
+| Asignación | LP bipartito capacitado (HiGHS); respaldo por redondeo sin garantía de óptimo; no hay respaldo lagrangiano implementado | codicioso por cliente como única opción |
 | Explicación | códigos de razón + frase desde matrices de elegibilidad | texto libre sin trazabilidad |
 
-Hipótesis a verificar en el paso 4: la relajación LP da solución entera (problema de transporte). Si no, redondeo + reparación.
+La integralidad de los vértices del modelo reducido se justifica por su matriz bipartita y los cupos enteros; la reducción a paquetes requiere utilidad aditiva no negativa y ausencia de otros recursos globales por producto. El código comprueba integralidad numérica y conserva límites de asignación al extraer o redondear. Ver demostración y alcance en `docs/FORMULACION_MATEMATICA.md`.
 
-## Pasos (cada uno cierra con evidencia en terminal)
+## Pasos del plan original
 1. **Config + reglas:** cargar/validar los 3 CSV del kit → YAML; intérprete de operadores. *Verif:* tests de cada operador y de `$producto`.
 2. **Validador + métricas:** R01–R16, valor, % jerarquía. *Verif:* acepta `casos_ejemplo_parrilla_esperada.csv` con 0 violaciones; detecta violaciones inyectadas a propósito.
 3. **Elegibilidad + línea base codiciosa:** *Verif:* reproduce los 5 casos esperados; 0 violaciones en 100k; registrar valor base sintético.
@@ -47,10 +46,19 @@ Hipótesis a verificar en el paso 4: la relajación LP da solución entera (prob
 Campañas → `campanas`; Reglas → `reglas`; Umbrales → `parametros`/reglas; Prioridad → `priorizacion` (jerarquía, pesos, α); Canales y cupos → `canales`; Política de contacto → `politica_contacto`; Datos nuevos → atributo por nombre de columna.
 
 ## Riesgos
-- Datos sintéticos distintos al oficial: no asumir distribuciones.
+- Una base nueva debe respetar el diccionario y sus dominios; no asumir que la validación de configuración valida también todo el CSV.
 - Con α>0 el valor optimizado ≠ valor medido: reportar siempre ambos.
 - Reglas con `$producto` requieren evaluación por producto.
-- Diccionario inferido: validar contra el oficial si aparece.
+- No confundir el identificador de una regla del YAML con su número en el PDF. Trazabilidad en `docs/RESTRICCIONES.md`.
+- La salida actual solo escribe dos campañas; topes mayores requieren adaptar el formato.
+
+## Documentación y próximos pasos actuales
+
+- Formulación, equivalencia a paquetes, integralidad, fórmula exacta y límites: `docs/FORMULACION_MATEMATICA.md`.
+- R01–R16, validadores y cobertura: `docs/RESTRICCIONES.md`.
+- Caso pequeño ejecutable con enumeración exhaustiva: `docs/EJEMPLO_ASIGNACION.md`.
+- Instalación y operación: `README.md`, `docs/CONFIGURACION.md`, `docs/GUIA_CONSOLA.md`, `docs/REPRODUCIBILIDAD.md`.
+- Trabajo de producto y límites pendientes: `docs/PENDIENTES.md`. Este plan no implica que esas mejoras estén implementadas.
 
 ## Fuera de alcance
 Entrenar modelos, RL, microservicios, base de datos.
