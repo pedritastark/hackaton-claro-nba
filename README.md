@@ -32,12 +32,18 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 # 3. Chequeo independiente escrito desde el PDF (solo con la config inicial)
 .venv/bin/python scripts/chequeo_pdf.py parrilla.csv data/oficial/clientes.csv
 
-# 4. Consola web
+# 4. Consola web (React + API). Requiere Node 20 o superior
+(cd web && npm install && npm run build)
+.venv/bin/uvicorn api.main:app --port 8000        # abre http://localhost:8000
+
+# 4b. Consola anterior en Streamlit (sigue disponible)
 .venv/bin/streamlit run app/consola.py
 
-# 5. Pruebas (~7 min; las de consola son las lentas)
+# 5. Pruebas (~7 min; las de consola Streamlit son las lentas)
 .venv/bin/pytest -q
 ```
+
+Para desarrollar la interfaz con recarga en caliente, deja la API en el puerto 8000 y corre `cd web && npm run dev` (puerto 5173, reenvía `/api` a la API).
 
 Opciones útiles de `nba.run`: `--algoritmo codicioso|optimo`, `--alpha 0.3` (peso de la jerarquía).
 Si cambias código de `nba/`, **reinicia Streamlit**: no recarga esos módulos.
@@ -79,7 +85,7 @@ Una regla nueva puede usar **cualquier columna** de la base de clientes. Guía d
 
 ## Consola
 
-Pensada para un analista de negocio. Secciones: **Tablero** (estado de la parrilla, cupos, embudo, reglas que más excluyen), **Cambiar configuración** (con vista previa del impacto y validación antes de aplicar), **Cliente** (por qué se decidió lo que se decidió), **Base de datos** y **Versiones** (historial y restauración). Guía: [`docs/GUIA_CONSOLA.md`](docs/GUIA_CONSOLA.md).
+Pensada para un analista de negocio. Hay dos versiones con los mismos resultados del motor: la principal, en **React** (`web/`) sobre una **API FastAPI** (`api/`), y la original en Streamlit (`app/`), que no incluye Resumen, Escenarios ni la curva de sensibilidad. La lógica de negocio es la del mismo motor `nba/`; la API solo valida, calcula y guarda, y el borrador de configuración viaja como JSON desde el navegador. Secciones: **Resumen** (portada), **Tablero** (estado de la parrilla, cupos, embudo, reglas que más excluyen), **Cambiar configuración** (con estimación instantánea, vista previa del impacto y validación antes de aplicar), **Escenarios** (guardar y comparar alternativas lado a lado), **Cliente** (por qué se decidió lo que se decidió), **Base de datos** y **Versiones** (historial y restauración). Guía: [`docs/GUIA_CONSOLA.md`](docs/GUIA_CONSOLA.md).
 
 ## Explicabilidad
 
@@ -91,7 +97,8 @@ Cada decisión genera un registro estructurado con productos y canales considera
 2. **Chequeo independiente** (`scripts/chequeo_pdf.py`): escrito desde el PDF, con los números fijos y sin importar nada de `nba/`.
 3. **Réplica de la línea base**: con la misma lógica sencilla se reproduce el valor oficial (10.241,6 vs 10.241,5).
 4. **Pruebas de mutación**: se rompe el código a propósito para confirmar que las pruebas fallan.
-5. **88 pruebas**, incluida una por cada tipo de cambio de configuración.
+5. **98 pruebas**, incluida una por cada tipo de cambio de configuración y 10 de la API.
+6. **Recorridos en navegador real** de la consola React (`cd web && npm run e2e`, con la API activa): tablero, cliente, base de datos, versiones, edición, impacto y borrador inválido; `npm run e2e:aplicar` prueba aplicar, versiones y restaurar y debe correrse contra una API con una copia de la configuración (`NBA_CONFIG_DIR`), porque escribe una versión.
 
 La cifra de 88 pruebas y los resultados de la tabla proceden del informe histórico. La [verificación de esta ampliación documental](docs/VERIFICACION_DOCUMENTACION.md) identifica qué se volvió a ejecutar. La [matriz R01–R16](docs/RESTRICCIONES.md) distingue numeración del PDF, reglas YAML, validadores y cobertura de pruebas.
 
@@ -99,7 +106,9 @@ La cifra de 88 pruebas y los resultados de la tabla proceden del informe histór
 
 ```
 nba/             motor (config, reglas, elegibilidad, candidatos, asignación, parrilla, explicar, validar, run, comparar, versiones)
-app/             consola Streamlit (consola.py) y componentes del tablero (tablero.py)
+api/             API FastAPI de la consola (main.py: rutas; servicio.py: lógica sin interfaz)
+web/             consola React (Vite + TypeScript + Tailwind + Recharts); web/e2e: recorridos con Playwright
+app/             consola anterior en Streamlit (consola.py) y componentes del tablero (tablero.py)
 config/          configuración viva (la edita la consola; versiones en config/versiones/)
 config_inicial/  configuración oficial del reto
 data/oficial/    base oficial de 100.000 clientes

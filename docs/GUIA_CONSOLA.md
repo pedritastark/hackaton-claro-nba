@@ -1,21 +1,29 @@
 # Guía de la consola
 
-Para el analista comercial. Arranque:
+Para el analista comercial. Arranque de la consola React:
 
 ```bash
-.venv/bin/streamlit run app/consola.py     # abre http://localhost:8501
+(cd web && npm install && npm run build)                  # una sola vez, o al cambiar la interfaz
+.venv/bin/uvicorn api.main:app --port 8000                # abre http://localhost:8000
 ```
+
+La consola original en Streamlit sigue disponible con `.venv/bin/streamlit run app/consola.py` (http://localhost:8501) y ofrece solo las secciones básicas (sin Resumen, Escenarios ni curva de sensibilidad).
 
 Variables opcionales: `NBA_CONFIG_DIR` (carpeta de configuración, por defecto `config/`) y `NBA_CLIENTES` (CSV de clientes, por defecto `data/oficial/clientes.csv`).
 
 ## Secciones (barra lateral)
+
+**Resumen.** La portada: valor esperado frente a la línea base, 0 violaciones, si el reparto de cupos es óptimo, el recorrido de la base a la parrilla y cuatro hallazgos generados de los datos. Se puede imprimir o guardar como PDF.
+
+**Escenarios.** Guarda borradores con nombre (desde «Cambiar configuración») y compáralos lado a lado con la configuración vigente: valor, clientes, uso de cupos, productos por campaña y violaciones. Un escenario solo se puede aplicar si tiene 0 violaciones. Cada escenario tarda unos 12 segundos en calcularse la primera vez.
 
 **Tablero.** ¿Cómo está la parrilla hoy?
 - Franja de estado: valor esperado, clientes con acción, violaciones.
 - Medidores de cupo por canal: cuánto se usa de cada uno.
 - Embudo: de todos los clientes, cuántos pasan cada filtro hasta quedar con acción.
 - Reglas que más excluyen: dónde se pierden clientes.
-- Composición por canal y producto.
+- Composición por canal y producto, en barras o en mapa de calor.
+- «¿Vale la pena ampliar un canal?»: curva del valor esperado al subir o bajar el cupo de un canal, frente a la estimación lineal del precio sombra. Se calcula en segundo plano (unos 12 s por punto).
 - Alertas y comparación con la versión anterior.
 - «Ver un ejemplo» abre un cliente representativo.
 

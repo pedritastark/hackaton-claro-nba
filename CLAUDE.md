@@ -14,6 +14,8 @@ Ningún número, letra, umbral, cupo ni regla de negocio vive en el código: tod
 - Correr: `.venv/bin/python -m nba.run --clientes data/oficial/clientes.csv --config config_inicial --out parrilla.csv [--algoritmo codicioso|optimo] [--alpha 0.3]`
 - Validar (exit 1 si hay violaciones): `.venv/bin/python -m nba.validar parrilla.csv --clientes data/oficial/clientes.csv --config config_inicial`
 - Consola: `.venv/bin/streamlit run app/consola.py` (NBA_CONFIG_DIR cambia la carpeta de config; tests en `tests/test_consola.py`)
+- Consola React: `(cd web && npm install && npm run build)` y `.venv/bin/uvicorn api.main:app --port 8000` (sirve `web/dist`); desarrollo: `cd web && npm run dev`. Pruebas de la API: `tests/test_api.py`; navegador: `cd web && npm run e2e` (API en :8000; `e2e:aplicar` escribe una versión: usar una API con `NBA_CONFIG_DIR` temporal).
+- El borrador de config viaja como JSON (esquema de `nba/config.py`); la lógica de la consola vive en `api/servicio.py`, no en React. `app/` (Streamlit) sigue vivo hasta que se decida retirarlo.
 - Explicaciones: `... nba.run --explicaciones e.jsonl.gz --resumen r.json`
 - Chequeo independiente del PDF (solo config inicial): `.venv/bin/python scripts/chequeo_pdf.py parrilla.csv data/oficial/clientes.csv`
 - Regenerar config desde el kit: `.venv/bin/python -m nba.importar_kit extraido/*/ config`

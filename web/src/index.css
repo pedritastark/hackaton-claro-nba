@@ -1,0 +1,61 @@
+@import "@fontsource-variable/inter";
+@import "tailwindcss";
+
+/* Sistema visual: negro y blanco para la interfaz; el color queda reservado para los datos. */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* grises neutros (reemplazan la escala slate de Tailwind) */
+  --color-slate-50: #f7f7f7;
+  --color-slate-100: #f1f1f1;
+  --color-slate-200: #e4e4e4;
+  --color-slate-300: #cfcfcf;
+  --color-slate-400: #a8a8a8;
+  --color-slate-500: #6b6b6b;
+  --color-slate-600: #4f4f4f;
+  --color-slate-700: #333333;
+  --color-slate-800: #1f1f1f;
+  --color-slate-900: #0a0a0a;
+
+  --color-tinta: #000000;
+  --color-dato: #2d6fcf;       /* serie unica de los graficos */
+  --color-bueno: #05944f;
+  --color-alerta: #c98a00;
+  --color-critico: #d62c1a;
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: #ffffff; color: #0a0a0a; font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01"; -webkit-font-smoothing: antialiased; letter-spacing: -0.005em;
+}
+h1, h2, h3, h4 { letter-spacing: -0.02em; }
+
+input[type="number"], input[type="text"], input[type="date"], select, textarea {
+  border: 1px solid transparent; border-radius: 8px; padding: 9px 12px; background: #f1f1f1;
+  font-size: 0.875rem; width: 100%; color: #0a0a0a; transition: background .12s, border-color .12s;
+}
+input[type="number"]:hover, input[type="text"]:hover, input[type="date"]:hover, select:hover { background: #ebebeb; }
+input:focus, select:focus, textarea:focus { outline: none; background: #fff; border-color: #000; box-shadow: 0 0 0 1px #000; }
+input[type="file"] { font-size: 0.875rem; }
+input[type="range"] { width: 100%; accent-color: #000; }
+input[type="checkbox"], input[type="radio"] { accent-color: #000; width: 16px; height: 16px; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+button:disabled { cursor: not-allowed; opacity: .4; }
+table { border-collapse: collapse; }
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+details[open] > summary .caret { transform: rotate(90deg); }
+
+@media print {
+  html, body, #root { height: auto; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@keyframes brillo { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.esqueleto {
+  background: linear-gradient(90deg, #f1f1f1 25%, #e8e8e8 37%, #f1f1f1 63%); background-size: 400% 100%;
+  animation: brillo 1.4s ease infinite; border-radius: 10px;
+}
+@media (prefers-reduced-motion: reduce) { .esqueleto { animation: none; } }
