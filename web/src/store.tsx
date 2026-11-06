@@ -2,10 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { api, ApiError } from './lib'
 import type { Config, ErrorCampo, Estado, InfoConfig, Revision, Trabajo } from './types'
 
-export const PAGINAS = ['Resumen', 'Tablero', 'Cambiar configuración', 'Escenarios', 'Cliente', 'Base de datos', 'Versiones'] as const
+export const PAGINAS = ['Resumen', 'Tablero', 'Cambiar configuración', 'Laboratorios', 'Cliente', 'Base de datos', 'Versiones', 'Usuarios y permisos', 'Mi cuenta'] as const
 export type Pagina = (typeof PAGINAS)[number]
 
 type Ctx = {
+  cacheDatos: Map<string, unknown>
   estado: Estado | null
   vigente: InfoConfig | null
   borrador: Config | null
@@ -31,6 +32,7 @@ export const useApp = () => {
 }
 
 export function Proveedor({ children }: { children: ReactNode }) {
+  const cacheDatos = useRef(new Map<string, unknown>()).current
   const [estado, setEstado] = useState<Estado | null>(null)
   const [vigente, setVigente] = useState<InfoConfig | null>(null)
   const [borrador, setBorradorRaw] = useState<Config | null>(null)
@@ -95,17 +97,17 @@ export function Proveedor({ children }: { children: ReactNode }) {
   }, [])
 
   const valor = useMemo<Ctx>(() => ({
+    cacheDatos,
     estado, vigente, borrador, setBorrador, revision, pagina, irA, clienteSel, setClienteSel, mensaje, setMensaje,
     epoca, recargar, cargarComoBorrador, errorInicial,
-  }), [estado, vigente, borrador, setBorrador, revision, pagina, irA, clienteSel, mensaje, epoca, recargar, cargarComoBorrador, errorInicial])
+  }), [cacheDatos, estado, vigente, borrador, setBorrador, revision, pagina, irA, clienteSel, mensaje, epoca, recargar, cargarComoBorrador, errorInicial])
 
   return <AppCtx.Provider value={valor}>{children}</AppCtx.Provider>
 }
 
 // Datos de la API con cache por epoca: cambiar de seccion no repite el calculo; aplicar un cambio lo invalida.
-const cache = new Map<string, unknown>()
 export function useDatos<T>(url: string | null) {
-  const { epoca } = useApp()
+  const { epoca, cacheDatos: cache } = useApp()
   const clave = `${epoca}|${url}`
   const [datos, setDatos] = useState<T | null>((cache.get(clave) as T) ?? null)
   const [error, setError] = useState<ApiError | null>(null)
@@ -125,10 +127,11 @@ export function useDatos<T>(url: string | null) {
     } finally {
       setCargando(false)
     }
-  }, [url, clave])
+  }, [url, clave, cache])
 
   useEffect(() => { void cargar() }, [cargar])
-  return { datos, error, cargando, recargar: () => cargar(true) }
+  const recargar = useCallback(() => cargar(true), [cargar])
+  return { datos, error, cargando, recargar }
 }
 
 // Sigue un trabajo en segundo plano de la API (el motor tarda unos 12 s por corrida) y entrega los resultados parciales.

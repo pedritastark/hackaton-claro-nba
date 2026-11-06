@@ -91,7 +91,7 @@ export function Tabs({ pestanas, children }: { pestanas: string[]; children: (ac
     <div>
       <div className="mb-4 flex flex-wrap gap-1 border-b border-slate-200" role="tablist">
         {pestanas.map((p) => (
-          <button key={p} role="tab" aria-selected={p === activa} onClick={() => setActiva(p)}
+          <button key={p} type="button" role="tab" aria-selected={p === activa} onClick={() => setActiva(p)}
             className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition ${p === activa ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-black'}`}>
             {p}
           </button>

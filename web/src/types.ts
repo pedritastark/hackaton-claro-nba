@@ -100,7 +100,14 @@ export type InfoBase = {
   vista_previa?: Record<string, unknown>[]
 }
 
-export type Escenario = { id: string; nombre: string; fecha: string; cambios: string[] }
+export type TipoLaboratorio = 'cupos' | 'reglas' | 'prioridad' | 'libre'
+export type Escenario = {
+  id: string; nombre: string; fecha: string; cambios: string[]
+  tipo: TipoLaboratorio; objetivo: string
+  ultimo_resultado: (ResultadoEscenario & {
+    fecha: string; referencia: string; base: { archivo: string; modificado: number; bytes: number }; metricas_referencia: Metricas
+  }) | null
+}
 export type Trabajo<T = unknown> = {
   estado: 'corriendo' | 'listo' | 'error'; hecho: number; total: number; parcial: T[]; resultado: Record<string, number | string> | null; error: string | null
 }

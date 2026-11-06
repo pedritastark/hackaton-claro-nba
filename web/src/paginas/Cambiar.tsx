@@ -371,7 +371,7 @@ function VistaPrevia({ b }: { b: Config }) {
         </div>
         <Boton disabled={!nombreEsc.trim()} onClick={guardarEscenario}>Guardar como escenario</Boton>
       </div>
-      {guardado && <Banner tono="ok">Escenario «{guardado}» guardado. <button type="button" className="font-medium underline underline-offset-2" onClick={() => irA('Escenarios')}>Compararlo en Escenarios</button></Banner>}
+      {guardado && <Banner tono="ok">Escenario «{guardado}» guardado. <button type="button" className="font-medium underline underline-offset-2" onClick={() => irA('Laboratorios')}>Compararlo en Laboratorios</button></Banner>}
       {cargando && <Cargando texto="Calculando el impacto con los 100.000 clientes..." />}
       {error && <Banner tono="error">{error.message}{error.detalle.length > 0 && <ListaErrores errores={error.detalle} />}</Banner>}
       {imp && c && (
