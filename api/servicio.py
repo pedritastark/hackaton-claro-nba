@@ -672,17 +672,23 @@ def _id_valido(i: str):
         raise ErrorNegocio("Escenario no válido.", codigo=404)
 
 
-def guardar_escenario(nombre: str, d: dict) -> dict:
+_candado_escenarios = threading.RLock()
+
+
+def guardar_escenario(nombre: str, d: dict, tipo: str = "libre", objetivo: str = "") -> dict:
     nombre = (nombre or "").strip()
     if not nombre:
         raise ErrorNegocio("Ponle un nombre al escenario.")
+    if tipo not in ("cupos", "reglas", "prioridad", "libre"):
+        raise ErrorNegocio("Tipo de laboratorio no válido.")
     cfg = _validar_config(d)
     carpeta = _carpeta_escenarios()
     carpeta.mkdir(parents=True, exist_ok=True)
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", nombre)[:40].strip("-")
-    eid = datetime.now().strftime("%Y%m%d-%H%M%S") + "_" + slug
+    eid = datetime.now().strftime("%Y%m%d-%H%M%S") + "_" + slug + "-" + uuid.uuid4().hex[:12]
     (carpeta / f"{eid}.json").write_text(json.dumps(
-        {"nombre": nombre, "fecha": datetime.now().isoformat(timespec="seconds"), "config": cfg.model_dump(mode="json")},
+        {"nombre": nombre, "fecha": datetime.now().isoformat(timespec="seconds"), "config": cfg.model_dump(mode="json"),
+         "tipo": tipo, "objetivo": objetivo.strip()},
         ensure_ascii=False, indent=2), encoding="utf-8")
     return {"id": eid, "nombre": nombre}
 
@@ -703,6 +709,8 @@ def listar_escenarios() -> list:
         except Exception:
             continue
         out.append({"id": f.stem, "nombre": j["nombre"], "fecha": j["fecha"],
+                    "tipo": j.get("tipo", "libre"), "objetivo": j.get("objetivo", ""),
+                    "ultimo_resultado": j.get("ultimo_resultado"),
                     "cambios": diferencias(vigente, cfg) if vigente else []})
     return out
 
@@ -720,7 +728,8 @@ def borrar_escenario(eid: str) -> dict:
     f = _carpeta_escenarios() / f"{eid}.json"
     if not f.is_file():
         raise ErrorNegocio("No existe ese escenario.", codigo=404)
-    f.unlink()
+    with _candado_escenarios:
+        f.unlink(missing_ok=True)
     return {"borrado": eid}
 
 
@@ -753,8 +762,13 @@ def estado_trabajo(tid: str) -> dict:
 
 
 def comparar_escenarios(ids: list) -> dict:
+    if not 1 <= len(ids) <= 4 or len(set(ids)) != len(ids):
+        raise ErrorNegocio("Elige de uno a cuatro experimentos diferentes.")
     ruta, mt = _exigir_base()
     vigente = cargar_vigente()
+    carpeta = _carpeta_escenarios()  # capturar también el destino, antes de lanzar el trabajo
+    referencia = nombre_configuracion(vigente)
+    datos = {"archivo": Path(ruta).name, "modificado": mt, "bytes": Path(ruta).stat().st_size}
     items = [("vigente", "Configuración vigente", vigente)]
     for i in ids:
         j = cargar_escenario(i)
@@ -767,9 +781,23 @@ def comparar_escenarios(ids: list) -> dict:
             with _candado:
                 m = _ejecutar(cj, ruta, mt)["m"]
                 v = _validar_corrida(cj, ruta, mt)
-            est["parcial"].append(limpio({"id": eid, "nombre": nombre, "metricas": _metricas_publicas(m),
+            resultado = limpio({"id": eid, "nombre": nombre, "metricas": _metricas_publicas(m),
                                           "violaciones_total": v["violaciones_total"], "violaciones": v["violaciones"],
-                                          "cambios": [] if eid == "vigente" else diferencias(vigente, cfg)}))
+                                          "cambios": [] if eid == "vigente" else diferencias(vigente, cfg)})
+            if eid != "vigente":
+                historico = {"fecha": datetime.now().astimezone().isoformat(timespec="seconds"),
+                             "referencia": referencia, "base": datos,
+                             "metricas_referencia": est["parcial"][0]["metricas"], **resultado}
+                # Si se elimina una prueba mientras corre, terminar el cálculo no la recrea.
+                with _candado_escenarios:
+                    archivo = carpeta / f"{eid}.json"
+                    if archivo.is_file():
+                        registro = json.loads(archivo.read_text(encoding="utf-8"))
+                        registro["ultimo_resultado"] = historico
+                        temporal = archivo.with_suffix(".tmp")
+                        temporal.write_text(json.dumps(registro, ensure_ascii=False, indent=2), encoding="utf-8")
+                        temporal.replace(archivo)
+            est["parcial"].append(resultado)
             est["hecho"] += 1
 
     return {"trabajo": _lanzar(len(items), tarea)}

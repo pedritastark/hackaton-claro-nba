@@ -152,11 +152,14 @@ def test_escenarios_guardar_comparar_y_borrar(cliente):
     antes = next(c for c in nuevo["canales"] if c["id"] == "whatsapp")["cupo"]   # depende de las pruebas previas
     next(c for c in nuevo["canales"] if c["id"] == "whatsapp")["cupo"] += 100
     miles = lambda x: f"{x:,}".replace(",", ".")
-    r = cliente.post("/api/escenarios", json={"nombre": "WhatsApp mas 100", "config": nuevo})
+    r = cliente.post("/api/escenarios", json={"nombre": "WhatsApp mas 100", "config": nuevo,
+                                             "tipo": "cupos", "objetivo": "Comprobar la capacidad adicional"})
     assert r.status_code == 200
     eid = r.json()["id"]
     lista = cliente.get("/api/escenarios").json()
     esc = next(e for e in lista if e["id"] == eid)
+    assert esc["tipo"] == "cupos" and esc["objetivo"] == "Comprobar la capacidad adicional"
+    assert esc["ultimo_resultado"] is None
     assert esc["nombre"] == "WhatsApp mas 100" and esc["cambios"] == [f"Cupo de WhatsApp: {miles(antes)} → {miles(antes + 100)}"]
     assert next(c for c in cliente.get(f"/api/escenarios/{eid}").json()["config"]["canales"] if c["id"] == "whatsapp")["cupo"] == antes + 100
     job = cliente.post("/api/escenarios/comparar", json={"ids": [eid]}).json()["trabajo"]
@@ -165,6 +168,12 @@ def test_escenarios_guardar_comparar_y_borrar(cliente):
     vig, esc_res = fin["parcial"]
     assert vig["violaciones_total"] == 0 and esc_res["violaciones_total"] == 0
     assert esc_res["metricas"]["valor_esperado"] - vig["metricas"]["valor_esperado"] == pytest.approx(6.5, abs=1.5)
+    historico = next(e for e in cliente.get("/api/escenarios").json() if e["id"] == eid)["ultimo_resultado"]
+    assert historico["metricas"] == esc_res["metricas"]
+    assert historico["metricas_referencia"] == vig["metricas"]
+    assert historico["base"]["archivo"] == "clientes.csv" and historico["base"]["bytes"] > 0
+    assert historico["referencia"] and historico["fecha"]
+    assert cliente.get("/api/config").json()["config"] == cfg  # ejecutar tampoco aplica
     assert cliente.delete(f"/api/escenarios/{eid}").status_code == 200
     assert not any(e["id"] == eid for e in cliente.get("/api/escenarios").json())
     assert cliente.get("/api/escenarios/mal-id").status_code == 404          # id con formato invalido
@@ -172,6 +181,33 @@ def test_escenarios_guardar_comparar_y_borrar(cliente):
     r404 = cliente.get("/api/no-existe")
     assert r404.status_code == 404 and r404.headers["content-type"].startswith("application/json")
     assert cliente.post("/api/escenarios", json={"nombre": " ", "config": cfg}).status_code == 422
+
+
+def test_laboratorios_guardar_duplicar_y_compatibilidad(cliente):
+    from api import servicio
+    import json
+    cfg = cliente.get("/api/config").json()["config"]
+    ids = []
+    for tipo in ("cupos", "reglas", "prioridad", "libre"):
+        # Un mismo nombre repetido en el mismo segundo debe crear copias independientes.
+        for _ in range(2):
+            r = cliente.post("/api/escenarios", json={"nombre": "Prueba repetida", "tipo": tipo, "config": cfg})
+            assert r.status_code == 200
+            ids.append(r.json()["id"])
+    assert len(set(ids)) == 8
+    assert cliente.get("/api/config").json()["config"] == cfg
+    assert cliente.post("/api/escenarios/comparar", json={"ids": []}).status_code == 422
+    assert cliente.post("/api/escenarios/comparar", json={"ids": ids[:5]}).status_code == 422
+    assert cliente.post("/api/escenarios/comparar", json={"ids": [ids[0], ids[0]]}).status_code == 422
+    assert cliente.post("/api/escenarios", json={"nombre": "Malo", "tipo": "no-existe", "config": cfg}).status_code == 422
+    # Los escenarios guardados antes del centro siguen disponibles sin migración destructiva.
+    carpeta = Path(servicio.config_dir()) / "escenarios"
+    anterior = carpeta / "20261104-120000_Legado.json"
+    anterior.write_text(json.dumps({"nombre": "Legado", "fecha": "2026-11-04T12:00:00", "config": cfg}))
+    legado = next(e for e in cliente.get("/api/escenarios").json() if e["nombre"] == "Legado")
+    assert legado["tipo"] == "libre" and legado["objetivo"] == "" and legado["ultimo_resultado"] is None
+    for eid in ids + [anterior.stem]:
+        assert cliente.delete(f"/api/escenarios/{eid}").status_code == 200
 
 
 def test_sensibilidad_de_cupos(cliente):

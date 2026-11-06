@@ -4,13 +4,13 @@ El borrador de configuracion viaja como JSON (el mismo esquema de nba/config.py)
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal
 
 from fastapi import FastAPI, File, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from api import servicio as s
 
@@ -106,11 +106,13 @@ def parrilla():
 
 # ---- escenarios guardados, trabajos y sensibilidad
 class NuevoEscenario(Borrador):
-    nombre: str
+    nombre: str = Field(max_length=200)
+    tipo: Literal['cupos', 'reglas', 'prioridad', 'libre'] = 'libre'
+    objetivo: str = Field(default='', max_length=2000)
 
 
 class Comparar(BaseModel):
-    ids: List[str]
+    ids: List[str] = Field(min_length=1, max_length=4)
 
 
 class Sensibilidad(BaseModel):
@@ -124,7 +126,7 @@ def escenarios():
 
 @app.post("/api/escenarios")
 def escenario_nuevo(b: NuevoEscenario):
-    return s.guardar_escenario(b.nombre, b.config)
+    return s.guardar_escenario(b.nombre, b.config, b.tipo, b.objetivo)
 
 
 @app.post("/api/escenarios/comparar")
