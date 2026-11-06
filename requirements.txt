@@ -5,3 +5,8 @@ pydantic>=2
 pyyaml
 pytest
 streamlit
+
+fastapi
+uvicorn
+python-multipart
+httpx

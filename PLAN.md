@@ -57,3 +57,24 @@ Entrenar modelos, RL, microservicios, base de datos.
 
 ## Flujo de trabajo
 Un paso por vez, commit modular, `/clear` al ~60% de contexto, evidencia de terminal antes de dar un paso por terminado.
+
+## Migración de la consola a React (Streamlit sigue vivo)
+Decisión: Vite + React + TypeScript + Tailwind + Recharts sobre una API FastAPI. `nba/` no cambia.
+
+| Paso | Contenido | Estado |
+|---|---|---|
+| 1 | `api/`: servicio sin interfaz + rutas (estado, config, revisar, impacto, aplicar, tablero, cliente, base, versiones, parrilla) y `tests/test_api.py` (10 pruebas) | hecho |
+| 2 | `web/`: estructura, navegación lateral, estado global, pantalla de configuración inválida | hecho |
+| 3 | Tablero, Cliente, Base de datos, Versiones | hecho |
+| 4 | Cambiar configuración: 6 pestañas, controles directos, asistente de reglas, vista previa, aplicar | hecho |
+| 5 | Recorridos en navegador real con Playwright (`web/e2e`) | hecho: 8 pasos de lectura/edición + 5 de aplicar/versiones/restaurar, sin errores |
+| 6 | Retirar Streamlit | pendiente: solo cuando el equipo valide la paridad |
+
+Decisiones de diseño: el borrador de configuración vive en el navegador como JSON del esquema de `nba/config.py` (se eliminó la conversión tabla↔config de Streamlit); la API valida con el mismo Pydantic y reutiliza `comparar`, `versiones` y `Explicador`; los controles directos (tope de llamadas, calificaciones por campaña) son endpoints para no duplicar la lógica en JavaScript; el orden de prioridad se cambia con flechas y no reordena la lista de campañas (para no alterar desempates).
+
+Ronda de presentación de la información: portada de Resumen, Tablero con medidores/embudo centrado/mapa de calor, ficha de decisión por cliente (con sus datos), simulador con estimación instantánea por precios sombra y barras divergentes, **Escenarios** guardados con comparación lado a lado, **curva de sensibilidad** de cupos y calidad de datos. Cálculos largos (comparar escenarios, curva) corren como trabajos en segundo plano con avance parcial (`/api/trabajos/{id}`).
+
+Diferencias conocidas frente a Streamlit: solo tema claro; el cálculo del tablero (3 corridas del motor la primera vez) bloquea la pantalla con un indicador en lugar de ejecutarse en segundo plano; no hay usuarios ni roles (igual que antes).
+
+### Rediseño visual de la consola React
+Estilo sobrio, minimalista, blanco y negro: el negro es la interfaz (barra lateral, botones primarios, franja de estado, barra flotante de cambios sin aplicar) y el color queda reservado para los datos. Tipografía Inter incluida en el paquete (sin depender de internet). Paleta de gráficos validada con el validador de la guía de visualización (claro): azul `#2d6fcf` para series únicas y, para canales, `#2d6fcf #d1702a #1d9b73 #8161be #c19a1b #c5517a`; el texto de leyendas y ejes va siempre en tinta neutra, nunca en el color de la serie. Mejoras de uso: esqueletos de carga en el tablero y barra flotante en «Cambiar configuración» con acceso directo a la vista previa. Solo tema claro.
