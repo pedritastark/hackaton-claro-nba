@@ -15,7 +15,11 @@ Variables opcionales: `NBA_CONFIG_DIR` (carpeta de configuración, por defecto `
 
 **Resumen.** La portada: valor esperado frente a la línea base, 0 violaciones, si el reparto de cupos es óptimo, el recorrido de la base a la parrilla y cuatro hallazgos generados de los datos. Se puede imprimir o guardar como PDF.
 
-**Escenarios.** Guarda borradores con nombre (desde «Cambiar configuración») y compáralos lado a lado con la configuración vigente: valor, clientes, uso de cupos, productos por campaña y violaciones. Un escenario solo se puede aplicar si tiene 0 violaciones. Cada escenario tarda unos 12 segundos en calcularse la primera vez.
+**Laboratorios.** Centro para crear pruebas de cupos y canales, reglas y umbrales, prioridades y algoritmo, o combinar esos cambios en una prueba personalizada. Elige como punto de partida la configuración vigente o tu borrador; los controles trabajan sobre una copia independiente. Escribe un nombre y un objetivo y usa «Guardar y ejecutar prueba», o guarda para ejecutar después. También puedes duplicar una alternativa guardada y abrir el laboratorio de sensibilidad para calcular la curva de cupos de un canal. Los escenarios anteriores y los guardados desde «Cambiar configuración» aparecen en la misma colección.
+
+Selecciona hasta cuatro experimentos y compáralos con la vigente: valor, clientes, uso de cupos, productos por campaña y violaciones. Cada escenario tarda unos 12 segundos en calcularse la primera vez. Se conserva el último resultado de cada experimento, con fecha, referencia y contexto del archivo de datos; aparece como **histórico**, porque la configuración vigente o la base pueden haber cambiado. Repite la comparación para evaluar contra la vigente actual. Se guarda solo la última ejecución de cada experimento; no es un historial completo de todas las corridas. Los trabajos en curso siguen viviendo en memoria y no sobreviven a un reinicio del servidor.
+
+Crear, guardar, duplicar y ejecutar pruebas no aplica cambios. Aplicar sigue siendo una acción explícita, con confirmación y nueva validación, que registra una versión. Las violaciones se evalúan con las reglas de cada experimento: si desactivas un filtro, revisa esa diferencia antes de aplicar; «0 violaciones» no significa que siga cumpliendo un filtro desactivado.
 
 **Tablero.** ¿Cómo está la parrilla hoy?
 - Franja de estado: valor esperado, clientes con acción, violaciones.

@@ -40,7 +40,7 @@ await paso('guardar un escenario desde el borrador', async () => {
   await pag.getByText(/Escenario «Escenario e2e» guardado/).waitFor({ timeout: 15000 })
 })
 await paso('comparar el escenario con la vigente', async () => {
-  await pag.getByRole('button', { name: 'Compararlo en Escenarios' }).click()
+  await pag.getByRole('button', { name: 'Compararlo en Laboratorios' }).click()
   await pag.getByText('Escenario e2e').first().waitFor({ timeout: 15000 })
   await pag.getByLabel('Seleccionar Escenario e2e').check()
   await pag.getByRole('button', { name: /Comparar 1 con la configuración vigente/ }).click()

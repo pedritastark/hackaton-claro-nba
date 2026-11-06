@@ -86,3 +86,15 @@ Diferencias conocidas frente a Streamlit: solo tema claro; el cálculo del table
 
 ### Rediseño visual de la consola React
 Estilo sobrio, minimalista, blanco y negro: el negro es la interfaz (barra lateral, botones primarios, franja de estado, barra flotante de cambios sin aplicar) y el color queda reservado para los datos. Tipografía Inter incluida en el paquete (sin depender de internet). Paleta de gráficos validada con el validador de la guía de visualización (claro): azul `#2d6fcf` para series únicas y, para canales, `#2d6fcf #d1702a #1d9b73 #8161be #c19a1b #c5517a`; el texto de leyendas y ejes va siempre en tinta neutra, nunca en el color de la serie. Mejoras de uso: esqueletos de carga en el tablero y barra flotante en «Cambiar configuración» con acceso directo a la vista previa. Solo tema claro.
+
+## Centro de laboratorios (2026-11-06)
+
+Alcance confirmado por el usuario con «hagamos esto»: priorizar transformar Escenarios en un centro para realizar diferentes pruebas. Usuarios y roles quedan como una ampliación posterior; la consola sigue sin autenticación.
+
+1. Cambiar la navegación a «Laboratorios» y conservar los escenarios existentes.
+2. Crear experimentos aislados desde la configuración vigente o el borrador actual: cupos y canales, reglas y umbrales, prioridades y algoritmo, o una copia personalizada. Permitir duplicar una alternativa sin alterar la original.
+3. Guardar nombre, objetivo y tipo de laboratorio; ejecutar y comparar hasta cuatro alternativas con la vigente mediante los trabajos existentes. Mantener la aplicación de cambios como una acción explícita y validada.
+4. Persistir el último resultado con su referencia y contexto de datos para consultar pruebas anteriores después de recargar. Identificarlo como histórico y permitir recalcular contra la vigente.
+5. Verificar con compilación, lint, pruebas de API y un recorrido de navegador sobre configuración temporal que crear, ejecutar y duplicar pruebas no modifica la vigente.
+
+Estado: pasos 1–5 implementados y verificados. TypeScript y Vite compilan; lint sin errores nuevos; 102 pruebas de Python aprobadas y recorrido completo de laboratorio en navegador aprobado, incluida la vista móvil. Se reinició la API local conservando la configuración. Evidencia y límites: `docs/VERIFICACION_LABORATORIOS.md`.
