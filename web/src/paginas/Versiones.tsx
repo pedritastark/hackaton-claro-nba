@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useSesion } from '../acceso'
 import { api, n } from '../lib'
 import { useApp, useDatos } from '../store'
 import type { Config, Version } from '../types'
 import { Banner, Boton, Card, Cargando, Titulo } from '../ui'
 
 export function Versiones() {
+  const { puede } = useSesion()
   const { cargarComoBorrador } = useApp()
   const { datos, error, cargando } = useDatos<Version[]>('/api/versiones')
   const [fallo, setFallo] = useState<string | null>(null)
@@ -35,7 +37,7 @@ export function Versiones() {
             <div className="text-sm text-slate-600">
               Valor {n(v.metricas.valor_esperado ?? 0, 1)} · {n(v.metricas.clientes_con_accion ?? 0)} clientes · jerarquía {v.metricas.jerarquia_pct ?? 0} %
             </div>
-            <Boton onClick={() => restaurar(v)}>Restaurar</Boton>
+            {puede('config.editar') && <Boton onClick={() => restaurar(v)}>Restaurar</Boton>}
           </div>
         </Card>
       ))}

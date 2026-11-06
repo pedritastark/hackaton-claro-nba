@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useSesion } from '../acceso'
 import { api, n } from '../lib'
 import { useApp, useDatos } from '../store'
 import type { InfoBase } from '../types'
 import { Banner, Boton, Campo, Card, Cargando, Metric, Seccion, Tabs, TablaLectura, Titulo } from '../ui'
 
 export function Base() {
+  const { puede } = useSesion()
   const { recargar } = useApp()
   const { datos: b, cargando, error } = useDatos<InfoBase>('/api/base')
   const [ruta, setRuta] = useState('')
@@ -30,7 +32,7 @@ export function Base() {
       {!b.existe && <Banner tono="error">El archivo activo no existe. Elige otro.</Banner>}
       {fallo && <Banner tono="error">{fallo}</Banner>}
 
-      <Card>
+      {puede('base.gestionar') && <Card>
         <Tabs pestanas={['Elegir un archivo', 'Escribir una ruta', 'Subir un archivo']}>
           {(p) => p === 'Elegir un archivo' ? (
             b.disponibles.length ? (
@@ -55,7 +57,7 @@ export function Base() {
             </div>
           )}
         </Tabs>
-      </Card>
+      </Card>}
 
       {b.existe && b.perfil && (
         <>

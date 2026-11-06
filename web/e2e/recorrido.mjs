@@ -1,3 +1,4 @@
+import { iniciarSesion } from './servidor.mjs'
 import { chromium } from 'playwright'
 
 const URL = process.argv[2] ?? 'http://localhost:8000'
@@ -14,6 +15,7 @@ const paso = async (nombre, f) => {
 }
 
 await pag.goto(URL)
+await iniciarSesion(pag)
 await paso('Resumen (portada) carga', async () => {
   await pag.getByText('Reparto óptimo verificado').waitFor({ timeout: 180000 })
   await pag.getByText('10.940,0').first().waitFor({ timeout: 5000 })

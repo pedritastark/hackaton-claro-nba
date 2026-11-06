@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
+import { useSesion } from '../acceso'
 import { BarrasDivergentes, Chip } from '../graficos'
 import { api, ApiError, delta, n, nombreCanal, signo } from '../lib'
 import { useApp, useDatos, useTrabajo } from '../store'
@@ -12,6 +13,7 @@ import type { Tablero as TableroT } from '../types'
 const MAX = 4
 
 export function Escenarios() {
+  const { puede } = useSesion()
   const { cargarComoBorrador, vigente: configuracion, borrador, recargar } = useApp()
   const { datos: lista, error, cargando, recargar: refrescar } = useDatos<Escenario[]>('/api/escenarios')
   const [sel, setSel] = useState<string[]>([])
@@ -96,7 +98,7 @@ export function Escenarios() {
         <p className="mt-2 max-w-2xl text-sm text-slate-300">Cada experimento trabaja sobre una copia. Guarda alternativas, ejecútalas sobre la base activa y contrasta su valor, cobertura y restricciones con la configuración vigente.</p>
       </section>
 
-      {edicion ? <Experimento inicial={edicion} cerrar={() => setEdicion(null)} guardado={guardado} /> : (
+      {!puede('laboratorios.gestionar') ? <Banner>Tu acceso es de consulta. Puedes revisar los experimentos y sus resultados guardados.</Banner> : edicion ? <Experimento inicial={edicion} cerrar={() => setEdicion(null)} guardado={guardado} /> : (
         <section>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <Seccion titulo="¿Qué quieres poner a prueba?" />
@@ -150,7 +152,7 @@ export function Escenarios() {
                 <Card key={e.id} className={marcado ? '!border-black' : ''}>
                   <div className="flex items-start justify-between gap-3">
                     <label className="flex cursor-pointer items-start gap-3">
-                      <input type="checkbox" className="mt-1" checked={marcado} disabled={ocupado || (!marcado && sel.length >= MAX)} onChange={() => alternar(e.id)} aria-label={`Seleccionar ${e.nombre}`} />
+                      <input type="checkbox" className="mt-1" checked={marcado} disabled={!puede('laboratorios.ejecutar') || ocupado || (!marcado && sel.length >= MAX)} onChange={() => alternar(e.id)} aria-label={`Seleccionar ${e.nombre}`} />
                       <span>
                         <span className="block font-semibold">{e.nombre}</span>
                         <span className="block text-xs text-slate-500">{LABORATORIOS.find((l) => l.tipo === e.tipo)?.nombre ?? 'Prueba personalizada'}</span>
@@ -173,16 +175,16 @@ export function Escenarios() {
                     {e.cambios.length > 4 && <li className="text-slate-500">· y {e.cambios.length - 4} cambios más</li>}
                   </ul>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Boton pequeno disabled={ocupado || !!edicion} onClick={() => duplicar(e)}>Duplicar prueba</Boton>
-                    <Boton pequeno onClick={() => cargar(e)}>Cargar como borrador</Boton>
-                    <Boton pequeno disabled={ocupado} onClick={() => eliminar(e)}>Eliminar</Boton>
+                    {puede('laboratorios.gestionar') && <Boton pequeno disabled={ocupado || !!edicion} onClick={() => duplicar(e)}>Duplicar prueba</Boton>}
+                    {puede('config.editar') && <Boton pequeno onClick={() => cargar(e)}>Cargar como borrador</Boton>}
+                    {puede('laboratorios.gestionar') && <Boton pequeno disabled={ocupado} onClick={() => eliminar(e)}>Eliminar</Boton>}
                   </div>
                 </Card>
               )
             })}
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Boton primario disabled={sel.length === 0 || ocupado || !!edicion} onClick={() => comparar()}>
+            <Boton primario disabled={!puede('laboratorios.ejecutar') || sel.length === 0 || ocupado || !!edicion} onClick={() => comparar()}>
               Comparar {sel.length > 0 ? `${sel.length} ` : ''}con la configuración vigente
             </Boton>
             <span className="text-xs text-slate-500">Elige hasta {MAX}. Cada escenario tarda unos 12 segundos la primera vez.</span>
@@ -253,7 +255,7 @@ export function Escenarios() {
                     <td className="pt-4" />
                     {res.map((r) => (
                       <td key={r.id} className="pt-4 pr-3">
-                        {r.id !== 'vigente' && (
+                        {r.id !== 'vigente' && puede('config.aplicar') && (
                           <Boton pequeno primario disabled={r.violaciones_total > 0 || trabajo?.estado === 'corriendo'} onClick={() => aplicar(r)}>
                             {r.violaciones_total > 0 ? 'No aplicable' : 'Aplicar este escenario'}
                           </Boton>)}

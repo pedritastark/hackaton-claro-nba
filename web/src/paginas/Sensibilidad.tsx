@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSesion } from '../acceso'
 import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api, CONTEXTO, DATO, n, nombreCanal, signo } from '../lib'
 import { useTrabajo } from '../store'
@@ -9,6 +10,7 @@ const EJE = { fontSize: 12, fill: '#4f4f4f' }
 const TIP = { borderRadius: 10, border: '1px solid #e4e4e4', boxShadow: 'none' }
 
 export function Sensibilidad({ t }: { t: TableroT }) {
+  const { puede } = useSesion()
   const [canal, setCanal] = useState(() => [...t.cupos].sort((a, b) => (t.precios_sombra[b.canal] ?? 0) - (t.precios_sombra[a.canal] ?? 0))[0].canal)
   const [job, setJob] = useState<string | null>(null)
   const [fallo, setFallo] = useState<string | null>(null)
@@ -37,7 +39,7 @@ export function Sensibilidad({ t }: { t: TableroT }) {
             {t.cupos.map((c) => <option key={c.canal} value={c.canal}>{c.nombre}</option>)}
           </select>
         </div>
-        <Boton primario onClick={calcular} disabled={trabajo?.estado === 'corriendo'}>Calcular la curva</Boton>
+        <Boton primario onClick={calcular} disabled={!puede('laboratorios.ejecutar') || trabajo?.estado === 'corriendo'}>Calcular la curva</Boton>
         <span className="pb-2 text-xs text-slate-500">Recalcula el reparto con la mitad, tres cuartos, uno y medio y el doble del cupo (unos 12 s por punto).</span>
       </div>
       {fallo && <Banner tono="error">{fallo}</Banner>}

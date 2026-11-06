@@ -85,6 +85,8 @@ Una regla nueva puede usar **cualquier columna** de la base de clientes. Guía d
 
 ## Consola
 
+La consola React requiere iniciar sesión. En una instalación nueva, crea el primer administrador con la clave de `var/acceso/clave-inicial.txt`. Después puedes crear usuarios y asignar los roles Administrador, Editor, Analista de pruebas o Consulta desde «Usuarios y permisos». Instalación, permisos y operación: [`docs/ACCESO_USUARIOS.md`](docs/ACCESO_USUARIOS.md).
+
 Pensada para un analista de negocio. Hay dos versiones con los mismos resultados del motor: la principal, en **React** (`web/`) sobre una **API FastAPI** (`api/`), y la original en Streamlit (`app/`), que no incluye Resumen, Escenarios ni la curva de sensibilidad. La lógica de negocio es la del mismo motor `nba/`; la API solo valida, calcula y guarda, y el borrador de configuración viaja como JSON desde el navegador. Secciones: **Resumen** (portada), **Tablero** (estado de la parrilla, cupos, embudo, reglas que más excluyen), **Cambiar configuración** (con estimación instantánea, vista previa del impacto y validación antes de aplicar), **Laboratorios** (pruebas de cupos, reglas y prioridades, alternativas guardadas y comparación de resultados), **Cliente** (por qué se decidió lo que se decidió), **Base de datos** y **Versiones** (historial y restauración). Guía: [`docs/GUIA_CONSOLA.md`](docs/GUIA_CONSOLA.md).
 
 ## Explicabilidad
@@ -97,7 +99,7 @@ Cada decisión genera un registro estructurado con productos y canales considera
 2. **Chequeo independiente** (`scripts/chequeo_pdf.py`): escrito desde el PDF, con los números fijos y sin importar nada de `nba/`.
 3. **Réplica de la línea base**: con la misma lógica sencilla se reproduce el valor oficial (10.241,6 vs 10.241,5).
 4. **Pruebas de mutación**: se rompe el código a propósito para confirmar que las pruebas fallan.
-5. **102 pruebas**, incluida una por cada tipo de cambio de configuración y 14 de la API. Evidencia actual: [`docs/VERIFICACION_LABORATORIOS.md`](docs/VERIFICACION_LABORATORIOS.md).
+5. **Pruebas automatizadas** del motor, de cada tipo de cambio, de la API y del acceso por roles. Evidencia de laboratorios: [`docs/VERIFICACION_LABORATORIOS.md`](docs/VERIFICACION_LABORATORIOS.md); verificación de usuarios: [`docs/ACCESO_USUARIOS.md`](docs/ACCESO_USUARIOS.md#verificación).
 6. **Recorridos en navegador real** de la consola React (`cd web && npm run e2e`, con la API activa): tablero, cliente, base de datos, versiones, edición, impacto y borrador inválido; `npm run e2e:aplicar` prueba aplicar, versiones y restaurar y debe correrse contra una API con una copia de la configuración (`NBA_CONFIG_DIR`), porque escribe una versión.
 
 Para verificar el **Centro de laboratorios**, ejecuta `cd web && npm run build && npm run e2e:laboratorios`. Este recorrido inicia su propia API con una configuración temporal: crea, ejecuta y duplica pruebas, guarda cambios de reglas y prioridades, recupera el último resultado tras recargar, calcula sensibilidad y comprueba que no se alteraron la configuración vigente ni las versiones. Requiere Chromium de Playwright; `NBA_CHROMIUM` permite indicar otro ejecutable instalado y `NBA_E2E_OUT` guardar las capturas de escritorio y móvil.
@@ -131,6 +133,7 @@ extraido/        kit original del reto (PDFs, casos de ejemplo, config en CSV)
 | [`docs/EJEMPLO_ASIGNACION.md`](docs/EJEMPLO_ASIGNACION.md) | Caso pequeño resuelto y ejecutable; comparación con el codicioso |
 | [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md) | Cada campo de los YAML, operadores de reglas, recetas de cambios |
 | [`docs/GUIA_CONSOLA.md`](docs/GUIA_CONSOLA.md) | Recorrido de la consola para el usuario de negocio |
+| [`docs/SIMULACION_ESTRATEGIAS.md`](docs/SIMULACION_ESTRATEGIAS.md) | Ganancias y sacrificios de cada estrategia, impacto por campaña y explicación antes/después por cliente |
 | [`docs/REPRODUCIBILIDAD.md`](docs/REPRODUCIBILIDAD.md) | Instalación, comandos, versiones, validación y reproducción de entregables |
 | [`docs/VERIFICACION_DOCUMENTACION.md`](docs/VERIFICACION_DOCUMENTACION.md) | Evidencia y alcance de las comprobaciones de esta documentación |
 | [`docs/diccionario_datos.md`](docs/diccionario_datos.md) | Columnas de la base de clientes |

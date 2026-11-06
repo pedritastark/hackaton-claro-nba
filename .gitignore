@@ -8,3 +8,4 @@ data/clientes.csv
 data/clientes_cargado.csv
 respaldo/
 .claude/settings.local.json
+var/acceso/

@@ -9,7 +9,7 @@
 - **Salida de dos campañas:** topes internos mayores que dos no caben en las columnas actuales. Hay que adaptar el formato antes de utilizarlos en una entrega.
 - **Calidad de datos:** el motor presupone dominios y columnas coherentes. Los ausentes no se tratan igual en todos los filtros y validadores; detalle en [RESTRICCIONES.md](RESTRICCIONES.md).
 - **Reproducibilidad histórica:** no se conservaron versiones exactas de todas las dependencias. La guía registra cómo capturarlas; un entorno nuevo no prueba identidad con el original.
-- **Consola sin usuarios, roles ni aprobaciones.**
+- **La consola React tiene usuarios, cuatro roles y actividad de operaciones.** El flujo formal de aprobación de cambios sigue pendiente. Streamlit y CLI son herramientas locales del operador; no ofrecen el control de acceso de la API. Ver [ACCESO_USUARIOS.md](ACCESO_USUARIOS.md).
 - **Consola React verificada en navegador real** con Playwright (`web/e2e`), pero solo por recorridos automáticos: conviene un recorrido manual de negocio antes de presentar. La consola Streamlit solo se probó con `AppTest`, que no puede teclear en las tablas editables.
 - **Consola React solo en tema claro**, y el cálculo del tablero bloquea la pantalla con un indicador mientras corre (unos segundos la primera vez).
 - **Streamlit no recarga `nba/`:** reiniciar tras cambios de motor.
@@ -18,7 +18,7 @@
 0. **Hecho en la consola React:** escenarios guardados con comparación, curva de sensibilidad de cupos, cuántos clientes excluye cada regla, datos del cliente en su ficha y calidad de datos con rangos.
 1. **Barrido de configuraciones.** Script que evalúe muchas configuraciones y reporte la frontera valor vs jerarquía y el costo de cada regla o cupo. Responde «¿cuál es la mejor configuración?».
 2. **Constructor de reglas en español** («no ofrecer Terminales si…») además del asistente actual.
-3. **Autoría y aprobación de cambios** en la consola (quién cambió qué, quién aprobó).
+3. **Aprobación de cambios** en la consola (quién aprobó). Ya existe identificación de usuarios y actividad de operaciones en React.
 4. **Recorrido manual de la consola React** con una persona de negocio y ajustes de UX; luego decidir si se retira Streamlit.
 5. **Material de presentación/demo**, si el reto lo pide (confirmar entregables).
 6. **Validación de datos y cobertura adicional:** probar explícitamente las tres autorizaciones digitales y un duplicado con canales válidos como escenarios de contacto múltiple; no confundir los casos actuales con cobertura exhaustiva.

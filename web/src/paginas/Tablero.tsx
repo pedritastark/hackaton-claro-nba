@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSesion } from '../acceso'
 import { Bar, BarChart, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { EmbudoCentrado, MapaCalor, Medidor, Numero } from '../graficos'
 import { CONTEXTO, DATO, delta, n, nombreCanal, SERIE, signo } from '../lib'
@@ -113,6 +114,7 @@ function GraficoReglas({ t, tipo }: { t: TableroT; tipo: string }) {
 }
 
 export function Tablero() {
+  const { puede } = useSesion()
   const { irA } = useApp()
   const { datos: t, error, cargando } = useDatos<TableroT>('/api/tablero')
   const [contra, setContra] = useState<'baseline' | 'anterior'>('baseline')
@@ -223,7 +225,7 @@ export function Tablero() {
       </Plegable>
 
       <div>
-        <a href="/api/parrilla.csv" download="parrilla.csv" className="inline-block rounded-lg bg-slate-100 px-5 py-2.5 text-sm font-medium text-black hover:bg-slate-200">Descargar parrilla.csv (con explicaciones)</a>
+        {puede('parrilla.exportar') && <a href="/api/parrilla.csv" download="parrilla.csv" className="inline-block rounded-lg bg-slate-100 px-5 py-2.5 text-sm font-medium text-black hover:bg-slate-200">Descargar parrilla.csv (con explicaciones)</a>}
         <span className="ml-3 text-xs text-slate-500">Se genera al pedirla; puede tardar unos segundos.</span>
       </div>
     </div>

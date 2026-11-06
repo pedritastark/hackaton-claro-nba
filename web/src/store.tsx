@@ -32,7 +32,7 @@ export const useApp = () => {
 }
 
 export function Proveedor({ children }: { children: ReactNode }) {
-  const cacheDatos = useRef(new Map<string, unknown>()).current
+  const [cacheDatos] = useState(() => new Map<string, unknown>())
   const [estado, setEstado] = useState<Estado | null>(null)
   const [vigente, setVigente] = useState<InfoConfig | null>(null)
   const [borrador, setBorradorRaw] = useState<Config | null>(null)
@@ -136,23 +136,24 @@ export function useDatos<T>(url: string | null) {
 
 // Sigue un trabajo en segundo plano de la API (el motor tarda unos 12 s por corrida) y entrega los resultados parciales.
 export function useTrabajo<T>(id: string | null): Trabajo<T> | null {
-  const [t, setT] = useState<Trabajo<T> | null>(null)
+  const [respuesta, setRespuesta] = useState<{ id: string; datos: Trabajo<T> } | null>(null)
   useEffect(() => {
-    if (!id) { setT(null); return }
+    if (!id) return
     let vivo = true
     let timer: ReturnType<typeof setTimeout> | undefined
     const sondear = async () => {
       try {
         const r = await api<Trabajo<T>>(`/api/trabajos/${id}`)
         if (!vivo) return
-        setT(r)
+        setRespuesta({ id, datos: r })
         if (r.estado === 'corriendo') timer = setTimeout(sondear, 1200)
       } catch (e) {
-        if (vivo) setT({ estado: 'error', hecho: 0, total: 0, parcial: [], resultado: null, error: (e as Error).message })
+        if (vivo) setRespuesta({ id, datos: { estado: 'error', hecho: 0, total: 0, parcial: [], resultado: null, error: (e as Error).message } })
       }
     }
     void sondear()
     return () => { vivo = false; if (timer) clearTimeout(timer) }
   }, [id])
-  return t
+  // Al iniciar otra comparación, nunca mostrar los resultados del trabajo anterior.
+  return respuesta?.id === id ? respuesta.datos : null
 }

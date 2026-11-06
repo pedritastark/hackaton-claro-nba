@@ -1,3 +1,4 @@
+import { iniciarSesion } from './servidor.mjs'
 import { chromium } from 'playwright'
 const URL = process.argv[2] ?? 'http://localhost:8001'
 const OUT = process.argv[3] ?? '.'
@@ -9,6 +10,7 @@ pag.on('response', (r) => { if (r.status() >= 400 && r.url().includes('/api/')) 
 pag.on('dialog', (d) => d.accept())
 const paso = async (n, f) => { try { await f(); console.log('OK  ', n) } catch (e) { console.log('FALLA', n, '->', e.message.split('\n')[0]); errores.push(n) } }
 await pag.goto(URL)
+await iniciarSesion(pag)
 await pag.getByText('Reparto óptimo verificado').waitFor({ timeout: 180000 })
 await paso('cambiar tope de llamadas (control directo) y calcular', async () => {
   await pag.getByRole('button', { name: 'Cambiar configuración', exact: true }).click()

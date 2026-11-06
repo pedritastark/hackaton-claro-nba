@@ -31,7 +31,7 @@ body {
 }
 h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
-input[type="number"], input[type="text"], input[type="date"], select, textarea {
+input[type="number"], input[type="text"], input[type="date"], input[type="email"], input[type="password"], select, textarea {
   border: 1px solid transparent; border-radius: 8px; padding: 9px 12px; background: #f1f1f1;
   font-size: 0.875rem; width: 100%; color: #0a0a0a; transition: background .12s, border-color .12s;
 }

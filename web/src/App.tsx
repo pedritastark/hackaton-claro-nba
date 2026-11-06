@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { Acceso } from './Acceso'
+import { NOMBRES_ROL, useSesion } from './acceso'
+import { Cuenta } from './paginas/Cuenta'
+import { Usuarios } from './paginas/Usuarios'
 import { Base } from './paginas/Base'
 import { Cambiar } from './paginas/Cambiar'
 import { Cliente } from './paginas/Cliente'
@@ -11,7 +15,9 @@ import { api, n } from './lib'
 import { Banner, Boton, Cargando, ListaErrores, Titulo } from './ui'
 
 function BarraLateral() {
-  const { pagina, irA, estado, vigente } = useApp()
+  const { pagina, irA, estado } = useApp()
+  const { usuario, puede, cerrar } = useSesion()
+  const paginas = PAGINAS.filter((p) => (p !== 'Cambiar configuración' || puede('config.editar')) && (p !== 'Usuarios y permisos' || puede('usuarios.gestionar')))
   return (
     <aside className="flex w-full shrink-0 flex-col bg-black p-4 text-slate-300 md:h-full md:w-64 md:p-5 print:hidden">
       <div className="mb-3 mt-1 md:mb-8">
@@ -20,7 +26,7 @@ function BarraLateral() {
       </div>
       <div className="mb-2 ml-3 hidden text-[0.68rem] font-medium uppercase tracking-[1.4px] text-slate-500 md:block">Navegación</div>
       <nav className="flex gap-0.5 overflow-x-auto md:flex-col">
-        {PAGINAS.map((p) => (
+        {paginas.map((p) => (
           <button key={p} onClick={() => irA(p)} aria-current={p === pagina ? 'page' : undefined}
             className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-2.5 text-left text-sm transition ${
               p === pagina ? 'bg-white font-semibold text-black' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}>
@@ -28,13 +34,18 @@ function BarraLateral() {
           </button>
         ))}
       </nav>
+      <div className="my-3 border-t border-slate-800 pt-3 text-xs">
+        <div className="font-medium text-white">{usuario.nombre}</div>
+        <div className="mt-1">{NOMBRES_ROL[usuario.rol]}</div>
+        <button type="button" onClick={() => void cerrar()} className="mt-2 rounded px-1 py-2 text-slate-300 hover:text-white">Cerrar sesión</button>
+      </div>
       <div className="mb-2 ml-3 mt-auto hidden text-[0.68rem] font-medium uppercase tracking-[1.4px] text-slate-500 md:block">Estado</div>
       <div className="hidden rounded-xl border border-slate-800 p-3.5 text-[0.8rem] leading-relaxed md:block">
         {estado?.base.existe ? (
           <>
             <span className="text-[#3ddc84]">●</span> <b className="text-white">Base activa</b><br />
             {estado.base.nombre}<br />{n(estado.base.filas)} clientes<br />
-            <b className="text-white">Configuración</b><br />{vigente ? estado.configuracion : 'no válida'}
+            <b className="text-white">Configuración</b><br />{estado.configuracion_valida ? estado.configuracion ?? 'Cargando…' : 'no válida'}
           </>
         ) : (
           <><b className="text-white">Sin base de datos</b><br />Elige una en «Base de datos».</>
@@ -46,6 +57,7 @@ function BarraLateral() {
 
 function ConfiguracionInvalida() {
   const { errorInicial, recargar } = useApp()
+  const { puede } = useSesion()
   const [trabajando, setTrabajando] = useState(false)
   const [fallo, setFallo] = useState<string | null>(null)
   const restaurar = async () => {
@@ -70,7 +82,7 @@ function ConfiguracionInvalida() {
       <p className="my-3 text-sm text-slate-600">
         Puedes <b>restaurar la configuración inicial del reto</b>. Antes de reemplazarla, la actual se guarda como respaldo en la carpeta <code>respaldo/</code>.
       </p>
-      <Boton primario onClick={restaurar} disabled={trabajando}>Restaurar la configuración inicial</Boton>
+      {puede('base.gestionar') ? <Boton primario onClick={restaurar} disabled={trabajando}>Restaurar la configuración inicial</Boton> : <Banner>Un administrador debe recuperar la configuración.</Banner>}
       {fallo && <Banner tono="error">{fallo}</Banner>}
     </div>
   )
@@ -78,6 +90,10 @@ function ConfiguracionInvalida() {
 
 function Contenido() {
   const { pagina, vigente, errorInicial, mensaje, estado } = useApp()
+  const { puede } = useSesion()
+  if (pagina === 'Mi cuenta') return <Cuenta />
+  if (pagina === 'Usuarios y permisos') return puede('usuarios.gestionar') ? <Usuarios /> : <Banner>Tu rol no permite administrar usuarios.</Banner>
+  if (pagina === 'Cambiar configuración' && !puede('config.editar')) return <Banner>Tu rol no permite editar la configuración vigente. Puedes consultar los resultados o trabajar en Laboratorios según tus permisos.</Banner>
   if (errorInicial) return <ConfiguracionInvalida />
   if (!estado || !vigente) return <Cargando texto="Conectando con el motor..." />
   return (
@@ -96,11 +112,11 @@ function Contenido() {
 
 export default function App() {
   return (
-    <Proveedor>
+    <Acceso><Proveedor>
       <div className="flex h-full flex-col md:flex-row print:block print:h-auto">
         <BarraLateral />
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 py-6 md:h-full md:px-10 md:py-9 print:h-auto print:overflow-visible print:p-0"><div className="mx-auto max-w-6xl"><Contenido /></div></main>
       </div>
-    </Proveedor>
+    </Proveedor></Acceso>
   )
 }

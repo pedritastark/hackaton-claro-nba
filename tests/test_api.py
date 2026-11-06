@@ -17,10 +17,18 @@ def cliente(tmp_path_factory):
     mp = pytest.MonkeyPatch()
     mp.setenv("NBA_CONFIG_DIR", str(cfg_dir))
     mp.setenv("NBA_CLIENTES", str(ROOT / "data" / "oficial" / "clientes.csv"))
+    mp.setenv("NBA_AUTH_DIR", str(cfg_dir / "acceso"))
     from api import servicio
     servicio._estado["ruta"] = None
     from api.main import app
-    yield TestClient(app)
+    c = TestClient(app)
+    c.get('/api/auth/sesion')
+    token = (cfg_dir / 'acceso' / 'clave-inicial.txt').read_text().strip()
+    r = c.post('/api/auth/configurar', json={"token": token, "nombre": "Administrador de pruebas", "correo": "admin@example.test", "clave": "Pruebas-API-2026-seguras"})
+    assert r.status_code == 200
+    c.headers['X-CSRF-Token'] = r.json()['csrf_token']
+    yield c
+    c.close()
     mp.undo()
 
 

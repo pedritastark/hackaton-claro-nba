@@ -1,4 +1,5 @@
 import { Chip, Numero } from '../graficos'
+import { useSesion } from '../acceso'
 import { delta, n, nombreCanal, signo } from '../lib'
 import { useApp, useDatos } from '../store'
 import type { Tablero } from '../types'
@@ -35,6 +36,7 @@ function hallazgos(t: Tablero): Hallazgo[] {
 }
 
 export function Resumen() {
+  const { puede } = useSesion()
   const { irA } = useApp()
   const { datos: t, error, cargando } = useDatos<Tablero>('/api/tablero')
 
@@ -153,7 +155,7 @@ export function Resumen() {
       </Card>
 
       <div className="flex flex-wrap gap-2 pb-2 print:hidden">
-        <a href="/api/parrilla.csv" download="parrilla.csv" className="rounded-lg bg-slate-100 px-5 py-2.5 text-sm font-medium text-black hover:bg-slate-200">Descargar parrilla.csv</a>
+        {puede('parrilla.exportar') && <a href="/api/parrilla.csv" download="parrilla.csv" className="rounded-lg bg-slate-100 px-5 py-2.5 text-sm font-medium text-black hover:bg-slate-200">Descargar parrilla.csv</a>}
         <Boton onClick={() => window.print()}>Imprimir o guardar como PDF</Boton>
       </div>
     </div>

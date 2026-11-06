@@ -11,14 +11,20 @@ export class ApiError extends Error {
 }
 
 type Opciones = { method?: string; body?: unknown; form?: FormData }
+let csrfToken: string | null = null
+export function establecerCSRF(token: string | null) { csrfToken = token }
 
 export async function api<T>(url: string, o: Opciones = {}): Promise<T> {
+  const method = o.method ?? (o.body || o.form ? 'POST' : 'GET')
+  const headers: Record<string, string> = {}
+  if (o.body) headers['Content-Type'] = 'application/json'
+  if (csrfToken && !['GET', 'HEAD', 'OPTIONS'].includes(method)) headers['X-CSRF-Token'] = csrfToken
   const r = await fetch(url, {
-    method: o.method ?? (o.body || o.form ? 'POST' : 'GET'),
-    headers: o.body ? { 'Content-Type': 'application/json' } : undefined,
+    method, headers, credentials: 'same-origin',
     body: o.form ?? (o.body ? JSON.stringify(o.body) : undefined),
   })
   if (!r.ok) {
+    if (r.status === 401 && url !== '/api/auth/entrar') window.dispatchEvent(new Event('nba:sesion-caducada'))
     let mensaje = `Error ${r.status}`
     let detalle: ErrorCampo[] = []
     try {

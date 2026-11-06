@@ -1,5 +1,16 @@
 # PLAN — Orquestador NBA configurable
 
+## Simulación explicable de estrategias (2026-11-06)
+
+Implementación autorizada por el usuario con «me gusta esa idea implementémosla». La consola React ya tiene laboratorios y comparación de escenarios; esta ampliación hace explícitas las ganancias, los sacrificios y el antes/después por cliente.
+
+1. Añadir un diagnóstico compartido de impacto: valor esperado, cobertura, jerarquía, ofertas por campaña y valor ganado/cedido por cliente, sin confundir estos indicadores con ventas reales.
+2. Incorporarlo a la vista previa y a los resultados persistidos de laboratorios, conservando la misma base, fecha y configuración de referencia para cada comparación.
+3. Permitir consultar la decisión y explicación de un cliente en ambas estrategias usando el contexto exacto de la simulación; detectar cuando la base cambió y se necesita recalcular.
+4. Mostrar un resumen de decisión, cambios por campaña y ejemplos navegables en React, con carga al borrador y aplicación explícita con la validación existente.
+5. Verificar los cálculos y la trazabilidad con pruebas de backend, compilación/lint y un recorrido de navegador con configuración temporal. Actualizar la guía con el flujo y la evidencia realmente obtenida.
+
+
 Registro del plan original y las decisiones implementadas. El informe y los artefactos de `entrega/` ya existen; sus resultados históricos incluyen 88 pruebas reportadas. La evidencia de las comprobaciones de la ampliación documental está en `docs/VERIFICACION_DOCUMENTACION.md`; no se presenta esa cifra histórica como una ejecución nueva.
 
 ## Calendario original (referencia histórica)
@@ -98,3 +109,26 @@ Alcance confirmado por el usuario con «hagamos esto»: priorizar transformar Es
 5. Verificar con compilación, lint, pruebas de API y un recorrido de navegador sobre configuración temporal que crear, ejecutar y duplicar pruebas no modifica la vigente.
 
 Estado: pasos 1–5 implementados y verificados. TypeScript y Vite compilan; lint sin errores nuevos; 102 pruebas de Python aprobadas y recorrido completo de laboratorio en navegador aprobado, incluida la vista móvil. Se reinició la API local conservando la configuración. Evidencia y límites: `docs/VERIFICACION_LABORATORIOS.md`.
+
+## Usuarios, roles y permisos (2026-11-06)
+
+Implementación autorizada por el usuario después de revisar los cuatro roles propuestos.
+
+| Acción | Administrador | Editor | Analista de pruebas | Consulta |
+|---|---|---|---|---|
+| Consultar tablero, clientes, versiones y resultados | Sí | Sí | Sí | Sí |
+| Crear, ejecutar, duplicar y eliminar experimentos compartidos | Sí | Sí | Sí | No |
+| Editar y aplicar configuración vigente | Sí | Sí | No | No |
+| Exportar parrilla | Sí | Sí | Sí | No |
+| Cambiar la base activa y restaurar configuración inválida | Sí | No | No | No |
+| Administrar usuarios y consultar actividad | Sí | No | No | No |
+
+1. Persistir usuarios, sesiones y actividad en SQLite fuera del control de versiones. Contraseñas con scrypt; sesiones opacas con caducidad, cookies HttpOnly y protección CSRF. Sin credenciales predeterminadas ni modo de acceso anónimo a la API.
+2. Crear el primer administrador con una clave de instalación de un solo uso, almacenada en un archivo local privado. Bloquear cambios que dejen la aplicación sin administrador activo.
+3. Proteger todas las rutas de negocio en el servidor por permiso, con denegación predeterminada. Revocar sesiones ante cambios de rol, contraseña o estado; registrar operaciones sin guardar contraseñas ni tokens en la actividad.
+4. Añadir acceso inicial, inicio y cierre de sesión, perfil y cambio de contraseña; una pantalla de usuarios y permisos para Administrador. Adaptar navegación y acciones de configuración, laboratorios, datos, versiones y exportación según permisos.
+5. Verificar permisos de cada rol con llamadas directas, sesiones caducadas/revocadas, CSRF, instalación inicial y gestión de administradores; mantener las pruebas de API del motor autenticadas y comprobar los flujos en navegador con cuentas temporales.
+
+El límite de protección es la consola React y su API. CLI, Streamlit y acceso directo al sistema de archivos quedan reservados al operador del servidor y no deben publicarse como accesos alternativos a la consola multiusuario.
+
+Estado: pasos 1–5 implementados. Se ejecutaron 25 pruebas de acceso y 14 de API, TypeScript, Vite, Oxlint y los recorridos de usuarios y laboratorios en navegador con cuentas temporales. Evidencia, instalación inicial y matriz de permisos: `docs/ACCESO_USUARIOS.md`.
